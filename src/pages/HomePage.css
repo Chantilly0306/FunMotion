@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #afe4d5; /* 來自Logo背景色 */
+}
+
+.dancer-gif {
+  width: 300px;
+  height: auto;
+}
+
+.title-text {
+  font-family: 'Comic Neue', cursive;
+  font-size: 3rem;
+  margin: 20px 0 10px;
+  color: #0b3c5d; /* 深藍色呼應Logo */
+}
+
+.button-container {
+  display: flex;
+  gap: 20px;
+}
+
+.home-button {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #0b3c5d;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;  /* 移除超連結底線 */
+  transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: #09416c;
+}
