@@ -7,11 +7,15 @@ import { auth } from '../firebase'; // 這裡導入剛剛寫的 firebase.js
 function ForgotPassword() {
   const [email, setEmail] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Reset password email:', email);
-    alert('Password reset link sent!');
-  };
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset link sent!");
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  };  
 
   return (
     <div className="forgot-container">
