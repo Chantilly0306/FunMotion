@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // 你從 Firebase Console 拿到的設定
 const firebaseConfig = {
@@ -16,7 +17,8 @@ const firebaseConfig = {
 
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// const analytics = getAnalytics(app);
 
 // 初始化 Firebase Authentication
 export const auth = getAuth(app);
+export const db = getFirestore(app);
