@@ -1,21 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // 加入 Link 元件
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword, browserLocalPersistence, browserSessionPersistence, setPersistence } from 'firebase/auth';
 
 function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: '',
     password: '',
+    remember: false,
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login data:', form);
-    alert('Logged in successfully!');
+    try {
+      await setPersistence(auth, form.remember ? browserLocalPersistence : browserSessionPersistence);
+
+      const userCredential = await signInWithEmailAndPassword(auth, form.email, form.password);
+      const user = userCredential.user;
+
+      alert('Login successful!');
+      navigate('/GameMenu');
+    } 
+    catch (error) {
+      console.error('Login error:', error.code, error.message);
+      alert('Login failed. Please check your email and password or try resetting your password.');
+    }
   };
 
   return (
@@ -38,11 +54,20 @@ function Login() {
           onChange={handleChange}
           required
         />
+        <label>
+          <input
+            type="checkbox"
+            name="remember"
+            checked={form.remember}
+            onChange={handleChange}
+          />
+          Remember me
+        </label>
         <button type="submit">Log In</button>
         <div className="login-links">
-          <Link to="/forgot-password">Forgot Password?</Link>
+          <a href="/forgot-password">Forgot Password?</a>
           <span> | </span>
-          <Link to="/signup">Sign Up</Link>
+          <a href="/signup">Sign Up</a>
         </div>
       </form>
     </div>

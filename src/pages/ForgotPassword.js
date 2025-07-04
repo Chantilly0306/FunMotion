@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ForgotPassword.css';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../firebase'; // 這裡導入剛剛寫的 firebase.js
+import { auth } from '../firebase';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -11,11 +11,17 @@ function ForgotPassword() {
     e.preventDefault();
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("Password reset link sent!");
-    } catch (error) {
-      alert("Error: " + error.message);
+      alert('Password reset link sent!');
+    } catch (err) {
+      if (err.code === 'auth/user-not-found') {
+        alert('Error: This email is not registered.');
+      } else if (err.code === 'auth/invalid-email') {
+        alert('Error: Invalid email address.');
+      } else {
+        alert('Error: ' + err.message);
+      }
     }
-  };  
+  };
 
   return (
     <div className="forgot-container">

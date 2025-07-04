@@ -62,6 +62,7 @@ function Profile() {
           <option value="stroke">Stroke</option>
           <option value="spinal cord injury">Spinal Cord Injury</option>
           <option value="brain trauma">Brain Trauma</option>
+          <option value="parkinson">Parkinson's Disease</option>
           <option value="hand injury">Hand Injury</option>
           <option value="other">Other conditions affecting limb movement</option>
           <option value="none">None</option>

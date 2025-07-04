@@ -4,7 +4,7 @@ import './SignUp.css';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // ⚠️ 確保你在 firebase.js export 了 db
+import { db } from '../firebase';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -22,11 +22,11 @@ function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 1. Firebase Auth 建立帳號
+      // Build account on Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
       const user = userCredential.user;
 
-      // 2. Firestore 建立初始資料
+      // Build first data on Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: form.email,
         nickname: form.nickname,
@@ -34,7 +34,7 @@ function SignUp() {
       });
 
       alert('Sign up successful!');
-      navigate('/Profile'); // ✅ 導向填寫基本資料頁面
+      navigate('/Profile');
 
     } catch (error) {
       console.error('Sign up error:', error.message);

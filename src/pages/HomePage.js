@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './HomePage.css'; // 新增一個 CSS 檔案來控制樣式
+import './HomePage.css';
 
 function HomePage() {
   return (

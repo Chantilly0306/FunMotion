@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { confirmPasswordReset } from 'firebase/auth';
-import { auth } from '../firebase'; // 根據你的 firebase.js 路徑調整
+import { auth } from '../firebase';
 
-import './ResetPassword.css'; // 可以自訂樣式
+import './ResetPassword.css';
 
 function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -12,7 +12,7 @@ function ResetPassword() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 取得 URL 上的 reset code（oobCode）
+  // get URL's reset code（oobCode）
   const queryParams = new URLSearchParams(location.search);
   const oobCode = queryParams.get('oobCode');
 

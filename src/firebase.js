@@ -1,24 +1,25 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+// import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-// 你從 Firebase Console 拿到的設定
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyC00vhsXe2pE5BhfHo6020Gl_aR_NChlHA",
+  apiKey: "AIzaSyCO0vhsXe2pE5fbHfo6020G1_aR_NChlHA",
   authDomain: "funmotion-a4585.firebaseapp.com",
   projectId: "funmotion-a4585",
-  storageBucket: "funmotion-a4585.appspot.com",
+  storageBucket: "funmotion-a4585.firebasestorage.app",
   messagingSenderId: "149572188919",
   appId: "1:149572188919:web:83a6c7226fbc42e1f171f2",
   measurementId: "G-HPB6KQD1F2"
 };
 
-// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 // const analytics = getAnalytics(app);
 
-// 初始化 Firebase Authentication
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export { auth, db };
