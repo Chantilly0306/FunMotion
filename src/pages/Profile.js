@@ -34,7 +34,7 @@ function Profile() {
         { merge: true }
       );
       alert('Profile saved successfully!');
-      navigate('/GameMenu');
+      navigate('/game-menu');
     } catch (error) {
       console.error('Save failed:', error.message);
       alert('Failed to save: ' + error.message);

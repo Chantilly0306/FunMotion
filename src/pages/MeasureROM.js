@@ -1,48 +1,113 @@
-import React, { useEffect, useState } from 'react';
+// MeasureROM.js
+import React, { useState, useEffect } from 'react';
 import './MeasureROM.css';
-import Lottie from 'lottie-react';
-import shoulderAbductionAnimation from './shoulder-abduction-animation.json'; // Lottie animation file
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
+import PoseTracker from '../components/PoseTracker';
 
-const MeasureROM = () => {
-  const [side, setSide] = useState('right'); // 'left' or 'right'
-  const [angle, setAngle] = useState(0);
-  const [maxAngle, setMaxAngle] = useState(0);
-  const [stableCounter, setStableCounter] = useState(0);
+const AnimatedAvatar = ({ url }) => {
+  const { scene, animations } = useGLTF(url);
+  const { actions } = useAnimations(animations, scene);
 
   useEffect(() => {
-    // Placeholder: Simulate angle updates from PoseTracker
-    const interval = setInterval(() => {
-      const simulatedAngle = Math.floor(Math.random() * 90 + 90); // Random 90~180 degrees
-      setAngle(simulatedAngle);
-      setMaxAngle(prev => (simulatedAngle > prev ? simulatedAngle : prev));
+    if (animations.length > 0) {
+      actions[animations[0].name]?.play();
+    }
+  }, [actions, animations]);
 
-      if (simulatedAngle >= maxAngle - 5) {
-        setStableCounter(prev => prev + 1);
-      } else {
-        setStableCounter(0);
-      }
-    }, 1000);
+  return <primitive object={scene} scale={1.5} />;
+};
 
-    return () => clearInterval(interval);
-  }, [maxAngle]);
+const MeasureROM = () => {
+  const [angle, setAngle] = useState(0);
+  const [maxAngle, setMaxAngle] = useState(0);
+  const [poseReady, setPoseReady] = useState(false);
+  const [audioPlayed, setAudioPlayed] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [angleHistory, setAngleHistory] = useState([]);
+
+  useEffect(() => {
+    if (poseReady && !audioPlayed) {
+      const audio = new SpeechSynthesisUtterance(
+        'Keep your palm facing forward. Raise your left arm outward as high as possible without pain, and hold it for 3 seconds.'
+      );
+      window.speechSynthesis.speak(audio);
+      setAudioPlayed(true);
+    }
+  }, [poseReady, audioPlayed]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      setShowResult(true);
+    } else if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleAngleUpdate = (newAngle) => {
+    setAngle(newAngle);
+    setAngleHistory((prev) => [...prev, newAngle]);
+    setMaxAngle((prev) => (newAngle > prev ? newAngle : prev));
+
+    if (!poseReady && newAngle < 20) {
+      setPoseReady(true);
+    }
+
+    if (poseReady && newAngle > 30 && countdown === null) {
+      setCountdown(3);
+    }
+  };
 
   return (
-    <div className="rom-container">
-      <h1 className="rom-title">Shoulder Abduction Measurement</h1>
-      <p className="rom-instruction">
-        Please move your {side} arm to the maximum range without pain.<br />
-        Hold the position for 3 seconds.
-      </p>
-
-      <div className="rom-animation">
-        <Lottie animationData={shoulderAbductionAnimation} loop autoplay style={{ width: 250 }} />
+    <div className="measure-rom-container">
+      <div className="camera-section">
+        <PoseTracker side="left" onAngleUpdate={handleAngleUpdate} />
       </div>
 
-      <div className="rom-info">
-        <p>Side: <strong>{side.toUpperCase()}</strong></p>
-        <p>Current Angle: <strong>{angle}°</strong></p>
-        <p>Max Angle: <strong>{maxAngle}°</strong></p>
-        {stableCounter >= 3 && <p className="rom-success">✔️ Angle held for 3 seconds!</p>}
+      <div className="avatar-section">
+        {!poseReady && (
+          <>
+            <img
+              src="/neutral-position.png"
+              alt="Neutral Pose"
+              className="avatar-image"
+            />
+            <p className="instruction-text">
+              Sit or stand. Let both arms rest by your sides naturally.
+            </p>
+          </>
+        )}
+
+        {poseReady && !showResult && (
+          <>
+            <div className="avatar-animation">
+              <Canvas camera={{ position: [0, 1.5, 3], fov: 45 }}>
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[3, 3, 3]} />
+                <AnimatedAvatar url="/models/shoulder-abd-l.glb" />
+                <OrbitControls enableZoom={false} />
+              </Canvas>
+            </div>
+            <p className="instruction-text">
+              Keep your palm facing forward. Raise your left arm outward as high as possible without pain, and hold it for 3 seconds.
+            </p>
+            {countdown !== null && (
+              <p className="instruction-text">Hold... {countdown}</p>
+            )}
+          </>
+        )}
+
+        {showResult && (
+          <div className="result-box">
+            <p className="result-text">Max Angle Recorded: {maxAngle}°</p>
+            <div className="button-group">
+              <button onClick={() => window.location.reload()}>Retake</button>
+              <button onClick={() => alert('Proceeding to next step...')}>Next</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

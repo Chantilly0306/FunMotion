@@ -26,7 +26,7 @@ function Login() {
       const user = userCredential.user;
 
       alert('Login successful!');
-      navigate('/GameMenu');
+      navigate('/game-menu');
     } 
     catch (error) {
       console.error('Login error:', error.code, error.message);
