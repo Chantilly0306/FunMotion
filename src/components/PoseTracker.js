@@ -2,7 +2,13 @@
 import React, { useRef, useEffect } from 'react';
 import { PoseLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
-const PoseTracker = ({ onPoseReady, onAngleUpdate, side = 'left', mode = 'rest', onRestConfirmed }) => {
+const PoseTracker = ({
+  onPoseReady,
+  onAngleUpdate,
+  side = 'left',
+  mode = 'rest',
+  onRestConfirmed,
+}) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const landmarkerRef = useRef(null);
@@ -51,11 +57,14 @@ const PoseTracker = ({ onPoseReady, onAngleUpdate, side = 'left', mode = 'rest',
       }
 
       const results = await landmarkerRef.current.detectForVideo(video, performance.now());
-      const landmarks = results?.landmarks?.[0];
+      let landmarks = results?.landmarks?.[0];
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (landmarks && landmarks.length > 0) {
+        // ✅ 鏡像 x 座標（與畫面鏡像一致）
+        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
+
         for (let i = 11; i <= 16; i++) {
           const { x, y, visibility } = landmarks[i];
           if (visibility > 0.5) {
@@ -78,6 +87,11 @@ const PoseTracker = ({ onPoseReady, onAngleUpdate, side = 'left', mode = 'rest',
             onPoseReady?.();
             onRestConfirmed?.();
           }
+        }
+
+        if (mode === 'measure') {
+          const c = calculateVerticalAbductionAngle(landmarks, 'left');
+          onAngleUpdate?.({ a: c });
         }
       }
 

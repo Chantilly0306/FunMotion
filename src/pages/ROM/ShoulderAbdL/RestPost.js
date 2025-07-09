@@ -1,3 +1,4 @@
+// pages/ROM/ShoulderAbdL/RestPost.js
 import React, { useEffect, useState } from 'react';
 import './RestPost.css';
 import PoseTracker from '../../../components/PoseTracker';
@@ -22,7 +23,7 @@ const RestPost = () => {
   }, [hasSpoken]);
 
   const handleRestConfirmed = () => {
-    navigate('/ROM/ShoulderAbdL/Measure');
+    navigate('/rom/shoulder-abd-l/measure');
   };
 
   return (
