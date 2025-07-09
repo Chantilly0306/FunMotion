@@ -9,7 +9,7 @@ const GameMenu = () => {
 
       <div className="game-menu-grid">
         <div className="game-menu-card">
-          <Link to="/measure-rom" className="menu-link">
+          <Link to="/rom/shoulder-abd-l/rest" className="menu-link">
             <img src="/measure-rom.png" alt="ROM Icon" className="menu-icon" />
             <p className="menu-label">Measure Range of Motion</p>
             <p className="menu-note">If this is your first time, please start by measuring your joint range.</p>
@@ -17,7 +17,7 @@ const GameMenu = () => {
         </div>
 
         <div className="game-menu-card small">
-          <Link to="/profile" className="menu-link">
+          <Link to="/user-data" className="menu-link">
             <img src="/user-icon.png" alt="User Icon" className="menu-icon small" />
             <p className="menu-label">Profile</p>
           </Link>
