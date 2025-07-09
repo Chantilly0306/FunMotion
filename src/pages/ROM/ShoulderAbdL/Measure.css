@@ -72,9 +72,26 @@
   
   .button-group {
     display: flex;
-    gap: 10px;
-    flex-direction: column;
+    gap: 20px; /* 增加按鈕間距 */
+    flex-direction: row; /* 並排 */
+    justify-content: center;
+    margin-top: 20px;
   }
+  
+  .button-group button {
+    font-size: 1.6rem;
+    padding: 10px 20px;
+    border: none;
+    background-color: #0b3c5d;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button-group button:hover {
+    background-color: #09436a;
+  }  
   
   .countdown-overlay {
     position: absolute;

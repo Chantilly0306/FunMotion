@@ -49,6 +49,12 @@ const PoseTracker = ({
     const detectPose = async () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
+      
+      if (!video || !canvas || !landmarkerRef.current || video.readyState < 2) {
+        animationRef.current = requestAnimationFrame(detectPose);
+        return;
+      }
+
       const ctx = canvas.getContext('2d');
 
       if (!video || !landmarkerRef.current || video.readyState < 2) {
