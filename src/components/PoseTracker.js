@@ -49,26 +49,19 @@ const PoseTracker = ({
     const detectPose = async () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
+
       if (!video || !canvas || !landmarkerRef.current || video.readyState < 2) {
         animationRef.current = requestAnimationFrame(detectPose);
         return;
       }
 
       const ctx = canvas.getContext('2d');
-
-      if (!video || !landmarkerRef.current || video.readyState < 2) {
-        animationRef.current = requestAnimationFrame(detectPose);
-        return;
-      }
-
       const results = await landmarkerRef.current.detectForVideo(video, performance.now());
       let landmarks = results?.landmarks?.[0];
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (landmarks && landmarks.length > 0) {
-        // ✅ 鏡像 x 座標（與畫面鏡像一致）
         landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
 
         for (let i = 11; i <= 16; i++) {
@@ -118,14 +111,24 @@ const PoseTracker = ({
       if (landmarkerRef.current) {
         landmarkerRef.current.close();
         landmarkerRef.current = null;
-      }      
+      }
     };
   }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed]);
 
   return (
-    <div className="camera-wrapper">
-      <video ref={videoRef} className="pose-video" muted playsInline />
-      <canvas ref={canvasRef} className="pose-canvas" />
+    <div className={`camera-wrapper ${mode}-mode`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+      <video
+        ref={videoRef}
+        className={mode === 'measure' || mode === 'rest' ? 'pose-video' : 'pose-video hidden'}
+        muted
+        playsInline
+        autoPlay
+      />
+      <canvas
+        ref={canvasRef}
+        className="pose-canvas"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+      />
     </div>
   );
 };

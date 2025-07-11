@@ -20,7 +20,7 @@ import ShoulderFlexLRest from './pages/ROM/ShoulderFlexL/RestPost';
 import ShoulderFlexLMeasure from './pages/ROM/ShoulderFlexL/Measure';
 import ShoulderFlexRRest from './pages/ROM/ShoulderFlexR/RestPost';
 import ShoulderFlexRMeasure from './pages/ROM/ShoulderFlexR/Measure';
-// import GameWipeGlass from './pages/GameWipeGlass';
+import GameWipeGlass from './pages/GameWipeGlass';
 
 function App() {
   return (
@@ -45,7 +45,7 @@ function App() {
         <Route path="/rom/shoulder-flex-l/measure" element={<ShoulderFlexLMeasure />} />
         <Route path="/rom/shoulder-flex-r/rest" element={<ShoulderFlexRRest />} />
         <Route path="/rom/shoulder-flex-r/measure" element={<ShoulderFlexRMeasure />} />
-        {/* <Route path="/game-wipe-glass" element={<GameWipeGlass />} /> */}
+        <Route path="/game-wipe-glass" element={<GameWipeGlass />} />
       </Routes>
     </Router>
   );

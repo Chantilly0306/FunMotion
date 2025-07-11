@@ -30,13 +30,13 @@ const GameMenu = () => {
           </Link>
         </div>
 
-        {/* <div className="game-menu-card">
+        <div className="game-menu-card">
           <Link to="/game-wipe-glass" className="menu-link">
             <img src="/wipe-glass-icon.png" alt="Wipe Glass Icon" className="menu-icon" />
             <p className="menu-label">Wipe Glass</p>
             <p className="menu-note">This is a game to practice straightening and raising your arms~</p>
           </Link>
-        </div> */}
+        </div>
       </div>
     </div>
   );

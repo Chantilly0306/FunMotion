@@ -22,6 +22,16 @@
     width: 100%;
     height: 100%;
   }
+
+  /* ✅ 顯示相機畫面於 rest 或 measure 模式 */
+.rest-mode .pose-video,
+.measure-mode .pose-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* 鏡像畫面 */
+}
   
   .pose-video {
     width: 100%;
