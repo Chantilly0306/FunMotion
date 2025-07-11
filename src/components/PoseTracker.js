@@ -96,8 +96,12 @@ const PoseTracker = ({
         }
 
         if (mode === 'measure') {
-          const c = calculateVerticalAbductionAngle(landmarks, 'left');
-          onAngleUpdate?.({ a: c });
+          const angle = calculateVerticalAbductionAngle(landmarks, side);
+          if (side === 'left') {
+            onAngleUpdate?.({ a: angle });
+          } else {
+            onAngleUpdate?.({ b: angle });
+          }
         }
       }
 
@@ -111,6 +115,10 @@ const PoseTracker = ({
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
       }
+      if (landmarkerRef.current) {
+        landmarkerRef.current.close();
+        landmarkerRef.current = null;
+      }      
     };
   }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed]);
 
