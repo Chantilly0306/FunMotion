@@ -8,6 +8,7 @@ const PoseTracker = ({
   side = 'left',
   mode = 'rest',
   onRestConfirmed,
+  onRightWristMove,
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -96,6 +97,16 @@ const PoseTracker = ({
             onAngleUpdate?.({ b: angle });
           }
         }
+
+        // 💧 Right wrist 擦玻璃
+        if (mode === 'wipe') {
+          const wrist = landmarks[16];
+          if (wrist.visibility > 0.5 && onRightWristMove) {
+            const x = wrist.x * canvas.width;
+            const y = wrist.y * canvas.height;
+            onRightWristMove(x, y);
+          }
+        }
       }
 
       animationRef.current = requestAnimationFrame(detectPose);
@@ -113,7 +124,7 @@ const PoseTracker = ({
         landmarkerRef.current = null;
       }
     };
-  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed]);
+  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onRightWristMove]);
 
   return (
     <div className={`camera-wrapper ${mode}-mode`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
