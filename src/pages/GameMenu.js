@@ -38,6 +38,14 @@ const GameMenu = () => {
             <p className="menu-note">This is a game to practice straightening and raising your arms~</p>
           </Link>
         </div>
+
+        <div className="game-menu-card">
+          <Link to="/game-badminton" className="menu-link">
+            <img src="/badminton-icon.png" alt="Badminton Icon" className="menu-icon" />
+            <p className="menu-label">Badminton Game</p>
+            <p className="menu-note">This is a game to practice waving your arms~</p>
+          </Link>
+        </div>
       </div>
     </div>
   );

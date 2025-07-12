@@ -16,6 +16,7 @@ const PoseTracker = ({
   const landmarkerRef = useRef(null);
   const animationRef = useRef(null);
   const isPoseReadyRef = useRef(false);
+  const triggeredRef = useRef(false);
 
   // 儲存左右手最大 elbow extension 角度
   const maxElbowExtendRef = useRef({ left: 0, right: 0 });
@@ -69,6 +70,35 @@ const PoseTracker = ({
       if (landmarks && landmarks.length > 0) {
         landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
 
+        if (mode === 'badminton') {
+          const rightWrist = landmarks[16];
+          const rightShoulder = landmarks[12];
+        
+          if (rightWrist.visibility > 0.5 && rightShoulder.visibility > 0.5) {
+            const isRaised = rightWrist.y < rightShoulder.y;
+            let direction = 'none';
+        
+            if (isRaised) {
+              if (rightWrist.x < 0.33) {
+                direction = 'left';
+              } else if (rightWrist.x > 0.66) {
+                direction = 'right';
+              } else {
+                direction = 'center';
+              }
+            }
+        
+            if (direction !== 'none' && !triggeredRef.current) {
+              triggeredRef.current = true;
+              onPoseReady?.(direction);
+        
+              setTimeout(() => {
+                triggeredRef.current = false;
+              }, 2000); // 每 2 秒允許一次偵測
+            }
+          }
+        }        
+
         if (mode === 'wipe') {
           const wristIndex = side === 'right' ? 16 : 15;
           const wrist = landmarks[wristIndex];
@@ -96,8 +126,21 @@ const PoseTracker = ({
             shoulder: flex,
             elbow: maxElbowExtendRef.current[side],
           });
+
+        } else if (mode === 'measure' || mode === 'rest') {
+          const indices = [11, 12, 13, 14, 15, 16];
+          for (const i of indices) {
+            const { x, y, visibility } = landmarks[i];
+            if (visibility > 0.5) {
+              ctx.beginPath();
+              ctx.arc(x * canvas.width, y * canvas.height, 6, 0, 2 * Math.PI);
+              ctx.fillStyle = 'cyan';
+              ctx.fill();
+            }
+          }
         } else {
-          for (let i = 11; i <= 16; i++) {
+          const indices = [12, 14, 16];
+          for (const i of indices) {
             const { x, y, visibility } = landmarks[i];
             if (visibility > 0.5) {
               ctx.beginPath();
@@ -206,8 +249,6 @@ function calculateShoulderFlexionAngle(landmarks, side = 'right') {
 
   return angleDeg;
 }
-
-
 
 function calculateElbowExtensionAngle(landmarks, side = 'right') {
   const shoulder = landmarks[side === 'right' ? 12 : 11];

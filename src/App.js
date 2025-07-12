@@ -9,7 +9,6 @@ import ProfilePage from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import GameMenu from './pages/GameMenu';
-import Game1 from './pages/Game1';
 import Record from './pages/Record';
 import UserData from './pages/UserData';
 import ShoulderAbdLRest from './pages/ROM/ShoulderAbdL/RestPost';
@@ -22,6 +21,7 @@ import ShoulderFlexRRest from './pages/ROM/ShoulderFlexR/RestPost';
 import ShoulderFlexRMeasure from './pages/ROM/ShoulderFlexR/Measure';
 import GameWipeGlass from './pages/GameWipeGlass';
 import InstructionWipeGlass from './pages/InstructionWipeGlass';
+import GameBadminton from './pages/GameBadminton';
 
 function App() {
   return (
@@ -35,7 +35,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/game-menu" element={<GameMenu />} />
-        <Route path="/game1" element={<Game1 />} />
         <Route path="/record" element={<Record />} />
         <Route path="/user-data" element={<UserData />} />
         <Route path="/rom/shoulder-abd-l/rest" element={<ShoulderAbdLRest />} />
@@ -48,6 +47,7 @@ function App() {
         <Route path="/rom/shoulder-flex-r/measure" element={<ShoulderFlexRMeasure />} />
         <Route path="/game-wipe-glass" element={<GameWipeGlass />} />
         <Route path="/instruction-wipe-glass" element={<InstructionWipeGlass />} />
+        <Route path="/game-badminton" element={<GameBadminton />} />
       </Routes>
     </Router>
   );
