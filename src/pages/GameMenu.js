@@ -1,3 +1,4 @@
+// pages/GameMenu.js
 import React from 'react';
 import './GameMenu.css';
 import { Link } from 'react-router-dom';
@@ -31,7 +32,7 @@ const GameMenu = () => {
         </div>
 
         <div className="game-menu-card">
-          <Link to="/game-wipe-glass" className="menu-link">
+          <Link to="/instruction-wipe-glass" className="menu-link">
             <img src="/wipe-glass-icon.png" alt="Wipe Glass Icon" className="menu-icon" />
             <p className="menu-label">Wipe Glass</p>
             <p className="menu-note">This is a game to practice straightening and raising your arms~</p>

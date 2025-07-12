@@ -54,7 +54,7 @@
   justify-content: space-between;
   padding: 6px 12px;
   border-bottom: 1px solid #ddd;
-  font-size: 15px;
+  font-size: 20px;
 }
 
 .nav-buttons {
@@ -73,4 +73,22 @@
 
 .nav-icon:hover {
   transform: scale(1.1);
+}
+
+.chart-section {
+  margin: 30px auto;
+  max-width: 1000px;     /* 限制最大寬度 */
+  height: 700px;        /* 固定圖表高度 */
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.record-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin: 10px auto 30px auto;
+  padding: 0 20px;
+  max-width: 600px;
 }

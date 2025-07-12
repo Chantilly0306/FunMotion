@@ -9,12 +9,16 @@ const PoseTracker = ({
   mode = 'rest',
   onRestConfirmed,
   onRightWristMove,
+  onRealtimeAngleUpdate,
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const landmarkerRef = useRef(null);
   const animationRef = useRef(null);
   const isPoseReadyRef = useRef(false);
+
+  // 儲存左右手最大 elbow extension 角度
+  const maxElbowExtendRef = useRef({ left: 0, right: 0 });
 
   useEffect(() => {
     const setup = async () => {
@@ -35,8 +39,8 @@ const PoseTracker = ({
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const video = videoRef.current;
+      if (!video) return;
       video.srcObject = stream;
-
       video.onloadedmetadata = () => {
         video.play();
         video.width = video.videoWidth;
@@ -63,26 +67,36 @@ const PoseTracker = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (landmarks && landmarks.length > 0) {
-        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x })); // 鏡像轉換
+        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
 
-        // 🎯 landmark 顯示根據 mode 切換
         if (mode === 'wipe') {
-          const wrist = landmarks[16];
+          const wristIndex = side === 'right' ? 16 : 15;
+          const wrist = landmarks[wristIndex];
           if (wrist.visibility > 0.5) {
             ctx.beginPath();
             ctx.arc(wrist.x * canvas.width, wrist.y * canvas.height, 10, 0, 2 * Math.PI);
             ctx.fillStyle = 'cyan';
             ctx.fill();
 
-            // 擦除觸發
             if (onRightWristMove) {
-              const relX = wrist.x; // 0~1
-              const relY = wrist.y; // 0~1
+              const relX = wrist.x;
+              const relY = wrist.y;
               onRightWristMove(relX, relY);
             }
           }
+
+          const flex = calculateShoulderFlexionAngle(landmarks, side);
+          const elbow = calculateElbowExtensionAngle(landmarks, side);
+
+          if (elbow > maxElbowExtendRef.current[side]) {
+            maxElbowExtendRef.current[side] = elbow;
+          }
+
+          onRealtimeAngleUpdate?.({
+            shoulder: flex,
+            elbow: maxElbowExtendRef.current[side],
+          });
         } else {
-          // rest 和 measure 模式顯示 11–16 六個點
           for (let i = 11; i <= 16; i++) {
             const { x, y, visibility } = landmarks[i];
             if (visibility > 0.5) {
@@ -94,7 +108,6 @@ const PoseTracker = ({
           }
         }
 
-        // 👉 ROM 測量與 rest 邏輯維持不變
         const a = calculateVerticalAbductionAngle(landmarks, 'left');
         const b = calculateVerticalAbductionAngle(landmarks, 'right');
 
@@ -134,7 +147,7 @@ const PoseTracker = ({
         landmarkerRef.current = null;
       }
     };
-  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onRightWristMove]);
+  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onRightWristMove, onRealtimeAngleUpdate]);
 
   return (
     <div
@@ -161,11 +174,52 @@ function calculateVerticalAbductionAngle(landmarks, side = 'left') {
   const isRight = side === 'right';
   const shoulder = landmarks[isRight ? 12 : 11];
   const elbow = landmarks[isRight ? 14 : 13];
-
   const dx = elbow.x - shoulder.x;
   const dy = elbow.y - shoulder.y;
   const angle = Math.atan2(dx, dy) * (180 / Math.PI);
   return Math.abs(angle);
+}
+
+function calculateShoulderFlexionAngle(landmarks, side = 'right') {
+  const isRight = side === 'right';
+  const shoulder = landmarks[isRight ? 12 : 11];
+  const elbow = landmarks[isRight ? 14 : 13];
+  const hip = landmarks[isRight ? 24 : 23];
+  const vec1 = [
+    hip.x - shoulder.x,
+    hip.y - shoulder.y,
+    hip.z - shoulder.z,
+  ];
+
+  const vec2 = [
+    shoulder.x - elbow.x,
+    shoulder.y - elbow.y,
+    shoulder.z - elbow.z,
+  ];
+
+  const dot = vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
+  const len1 = Math.sqrt(vec1[0]**2 + vec1[1]**2 + vec1[2]**2);
+  const len2 = Math.sqrt(vec2[0]**2 + vec2[1]**2 + vec2[2]**2);
+
+  const angleRad = Math.acos(dot / (len1 * len2));
+  const angleDeg = angleRad * (180 / Math.PI);
+
+  return angleDeg;
+}
+
+
+
+function calculateElbowExtensionAngle(landmarks, side = 'right') {
+  const shoulder = landmarks[side === 'right' ? 12 : 11];
+  const elbow = landmarks[side === 'right' ? 14 : 13];
+  const wrist = landmarks[side === 'right' ? 16 : 15];
+  const vec1 = [shoulder.x - elbow.x, shoulder.y - elbow.y];
+  const vec2 = [wrist.x - elbow.x, wrist.y - elbow.y];
+  const dot = vec1[0] * vec2[0] + vec1[1] * vec2[1];
+  const len1 = Math.sqrt(vec1[0] ** 2 + vec1[1] ** 2);
+  const len2 = Math.sqrt(vec2[0] ** 2 + vec2[1] ** 2);
+  const angle = Math.acos(dot / (len1 * len2)) * (180 / Math.PI);
+  return angle;
 }
 
 function checkRestPoseByVertical(landmarks, angleL, angleR) {

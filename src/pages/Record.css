@@ -1,0 +1,57 @@
+/* pages/Record.css */
+body {
+  margin: 0;
+  background-color: #e0f7f4;
+  font-family: 'Comic Neue', cursive;
+}
+
+.record-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #e0f7f4;
+  padding: 2rem;
+  text-align: center;
+}
+
+.record-title {
+  font-size: 2.8rem;
+  color: #0b3c5d;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.record-info {
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 1.6rem;
+  color: #0b3c5d;
+  width: 100%;
+  max-width: 500px;
+  line-height: 1.8;
+}
+
+.record-info p {
+  margin: 1rem 0;
+}
+
+.back-button {
+  background-color: #0b3c5d;
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #097090;
+}

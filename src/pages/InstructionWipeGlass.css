@@ -1,0 +1,96 @@
+/* pages/InstructionWipeGlass.css */
+body {
+  margin: 0;
+  background-color: #e0f7f4;
+  font-family: 'Comic Neue', cursive;
+}
+
+.instruction-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #e0f7f4;
+  padding: 2rem;
+}
+
+.instruction-container {
+  width: 100%;
+  max-width: 700px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  background-color: #e0f7f4;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Comic Neue', cursive;
+}
+
+.instruction-title {
+  font-size: 3rem;
+  color: #0b3c5d;
+  margin-bottom: 1.5rem;
+}
+
+.instruction-text {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 2rem;
+  line-height: 1.8;
+}
+
+.selector-group {
+  margin: 2.5rem 0;
+}
+
+.selector-label {
+  font-size: 1.6rem;
+  color: #0b3c5d;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.button-group button {
+  padding: 0.8rem 1.6rem;
+  border: 2px solid #0b3c5d;
+  background-color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #0b3c5d;
+  font-size: 1.3rem;
+  transition: 0.2s ease-in-out;
+}
+
+.button-group button.selected {
+  background-color: #0b3c5d;
+  color: white;
+}
+
+.button-group button:hover {
+  background-color: #0b3c5d22;
+}
+
+.start-button {
+  padding: 1rem 2.5rem;
+  font-size: 1.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+  margin-top: 1rem;
+}
+
+.start-button:hover {
+  background-color: #218838;
+}

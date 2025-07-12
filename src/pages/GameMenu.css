@@ -1,3 +1,4 @@
+/* pages/GameMenu.css */
 .game-menu-container {
     display: flex;
     flex-direction: column;
@@ -28,7 +29,7 @@
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    width: 280px;
+    width: 400px;
     text-align: center;
     transition: transform 0.3s ease;
   }
@@ -48,25 +49,26 @@
   }
   
   .menu-icon {
-    width: 200px;
+    width: 240px;
     height: auto;
-    margin-bottom: 15px;
-  }
+    margin-bottom: 20px;
+  }  
   
   .menu-icon.small {
     width: 70px;
   }
   
   .menu-label {
-    font-size: 1.3rem;
+    font-size: 1.8rem;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     color: #0b3c5d;
   }
   
   .menu-note {
-    font-size: 0.95rem;
-    color: #666666;
-    margin-top: 5px;
-  }
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: #444444;
+    margin-top: 8px;
+  }  
   
