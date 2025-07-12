@@ -17,28 +17,32 @@ export default function GameWipeGlass() {
   }, []);
 
   useEffect(() => {
-    // 當圖片載入後畫灰玻璃遮罩
     const img = new Image();
     img.src = '/gray-glass.png';
     img.onload = () => {
       const canvas = overlayRef.current;
       const ctx = canvas.getContext('2d');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const displayWidth = canvas.clientWidth;
+      const displayHeight = canvas.clientHeight;
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
+      ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
     };
   }, [scenery]);
 
-  const eraseAt = (x, y) => {
+  const eraseAt = (relX, relY) => {
     const canvas = overlayRef.current;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const x = relX * canvas.width;
+    const y = relY * canvas.height;
     const radius = 100; // 擦除大小
     ctx.clearRect(x - radius / 2, y - radius / 2, radius, radius);
   };  
 
   const handleWipeComplete = () => {
     setGameCompleted(true);
-    setTimeout(() => navigate('/game-menu'), 2000);
+    setTimeout(() => navigate('/record'), 2000);
   };
 
   return (

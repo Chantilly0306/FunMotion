@@ -63,18 +63,38 @@ const PoseTracker = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (landmarks && landmarks.length > 0) {
-        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
+        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x })); // 鏡像轉換
 
-        for (let i = 11; i <= 16; i++) {
-          const { x, y, visibility } = landmarks[i];
-          if (visibility > 0.5) {
+        // 🎯 landmark 顯示根據 mode 切換
+        if (mode === 'wipe') {
+          const wrist = landmarks[16];
+          if (wrist.visibility > 0.5) {
             ctx.beginPath();
-            ctx.arc(x * canvas.width, y * canvas.height, 6, 0, 2 * Math.PI);
+            ctx.arc(wrist.x * canvas.width, wrist.y * canvas.height, 10, 0, 2 * Math.PI);
             ctx.fillStyle = 'cyan';
             ctx.fill();
+
+            // 擦除觸發
+            if (onRightWristMove) {
+              const relX = wrist.x; // 0~1
+              const relY = wrist.y; // 0~1
+              onRightWristMove(relX, relY);
+            }
+          }
+        } else {
+          // rest 和 measure 模式顯示 11–16 六個點
+          for (let i = 11; i <= 16; i++) {
+            const { x, y, visibility } = landmarks[i];
+            if (visibility > 0.5) {
+              ctx.beginPath();
+              ctx.arc(x * canvas.width, y * canvas.height, 6, 0, 2 * Math.PI);
+              ctx.fillStyle = 'cyan';
+              ctx.fill();
+            }
           }
         }
 
+        // 👉 ROM 測量與 rest 邏輯維持不變
         const a = calculateVerticalAbductionAngle(landmarks, 'left');
         const b = calculateVerticalAbductionAngle(landmarks, 'right');
 
@@ -97,16 +117,6 @@ const PoseTracker = ({
             onAngleUpdate?.({ b: angle });
           }
         }
-
-        // 💧 Right wrist 擦玻璃
-        if (mode === 'wipe') {
-          const wrist = landmarks[16];
-          if (wrist.visibility > 0.5 && onRightWristMove) {
-            const x = wrist.x * canvas.width;
-            const y = wrist.y * canvas.height;
-            onRightWristMove(x, y);
-          }
-        }
       }
 
       animationRef.current = requestAnimationFrame(detectPose);
@@ -127,7 +137,10 @@ const PoseTracker = ({
   }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onRightWristMove]);
 
   return (
-    <div className={`camera-wrapper ${mode}-mode`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+    <div
+      className={`camera-wrapper ${mode}-mode`}
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+    >
       <video
         ref={videoRef}
         className={mode === 'measure' || mode === 'rest' ? 'pose-video' : 'pose-video hidden'}
