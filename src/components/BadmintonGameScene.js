@@ -1,14 +1,8 @@
 // src/components/BadmintonGameScene.js
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import {
-  GLTFLoader
-} from 'three/examples/jsm/loaders/GLTFLoader';
-import {
-  AnimationMixer,
-  AnimationClip,
-  VectorKeyframeTrack
-} from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { AnimationMixer } from 'three';
 
 const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) => {
   const mountRef = useRef(null);
@@ -16,6 +10,9 @@ const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) 
   const racketRef = useRef(null);
   const directionRef = useRef('center');
   const wristRef = useRef(null);
+  const mixerRef = useRef(null);
+  const animationsRef = useRef([]);
+  const currentActionRef = useRef(null);
 
   useEffect(() => {
     wristRef.current = wristPosition;
@@ -46,34 +43,39 @@ const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) 
       scene.add(gltf.scene);
     });
 
-    // 羽球（含動畫）
-    loader.load('/models/badminton.glb', (gltf) => {
+    // 羽球 + 所有動畫
+    loader.load('/models/badminton-action.glb', (gltf) => {
       const shuttle = gltf.scene;
-      shuttle.scale.set(15, 15, 15);
-      shuttle.position.set(-5, 3, 0);
+      shuttle.scale.set(1, 1, 1);
       scene.add(shuttle);
       shuttlecockRef.current = shuttle;
 
-      const dir = expectedDirection || ['left', 'center', 'right'][Math.floor(Math.random() * 3)];
-      directionRef.current = dir;
-      const zOffset = { left: -2, center: 0, right: 2 }[dir];
-
-      // 用 KeyframeTrack 定義位置動畫
-      const positionKF = new VectorKeyframeTrack(
-        '.position',
-        [0, 2],
-        [-5, 3, 0, 13, 2, zOffset]
-      );
-      const clip = new AnimationClip('fly', 2, [positionKF]);
       const mixer = new AnimationMixer(shuttle);
-      const action = mixer.clipAction(clip);
-      action.setLoop(THREE.LoopOnce);
-      action.clampWhenFinished = true;
-      action.play();
+      mixerRef.current = mixer;
+      animationsRef.current = gltf.animations;
 
-      shuttle.userData.mixer = mixer;
+      const playRandomAnimation = () => {
+        const clips = animationsRef.current;
+        if (!clips || clips.length === 0) return;
 
-      // 加邊界線 debug
+        const randomIndex = Math.floor(Math.random() * clips.length);
+        const clip = clips[randomIndex];
+        const action = mixer.clipAction(clip);
+        action.reset();
+        action.setLoop(THREE.LoopOnce);
+        action.clampWhenFinished = true;
+        action.play();
+
+        currentActionRef.current = action;
+
+        action.onFinished = () => {
+          playRandomAnimation(); // 播完繼續播下一個
+        };
+      };
+
+      playRandomAnimation();
+
+      // 加邊界線 debug（可選）
       const boxHelper = new THREE.BoxHelper(shuttle, 0xffff00);
       scene.add(boxHelper);
       shuttle.userData.boxHelper = boxHelper;
@@ -93,7 +95,6 @@ const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) 
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
 
-      // 球拍移動
       const pos = wristRef.current;
       if (pos && racketRef.current) {
         const { x, y } = pos;
@@ -103,19 +104,20 @@ const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) 
         racketRef.current.rotation.set(0, Math.PI / 2, 0);
       }
 
-      // 更新羽球動畫
-      const shuttle = shuttlecockRef.current;
-      if (shuttle?.userData.mixer) {
-        shuttle.userData.mixer.update(delta);
-        shuttle.userData.boxHelper?.update();
+      if (mixerRef.current) {
+        mixerRef.current.update(delta);
+      }
 
-        // 碰撞偵測
+      const shuttle = shuttlecockRef.current;
+      if (shuttle?.userData.boxHelper) {
+        shuttle.userData.boxHelper.update();
+
         if (racketRef.current) {
           const racketBox = new THREE.Box3().setFromObject(racketRef.current);
           const shuttleBox = new THREE.Box3().setFromObject(shuttle);
           if (racketBox.intersectsBox(shuttleBox)) {
             onShuttleHit?.(directionRef.current);
-            shuttle.userData.mixer.stopAllAction();
+            currentActionRef.current?.stop(); // 若碰到就停動畫
           }
         }
       }
@@ -124,7 +126,6 @@ const BadmintonGameScene = ({ onShuttleHit, expectedDirection, wristPosition }) 
     };
     animate();
 
-    // Resize handler
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();

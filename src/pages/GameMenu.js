@@ -43,7 +43,7 @@ const GameMenu = () => {
           <Link to="/game-badminton" className="menu-link">
             <img src="/badminton-icon.png" alt="Badminton Icon" className="menu-icon" />
             <p className="menu-label">Badminton Game</p>
-            <p className="menu-note">This is a game to practice waving your arms~</p>
+            <p className="menu-note">This game has not been built successfully</p>
           </Link>
         </div>
       </div>
