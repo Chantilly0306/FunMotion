@@ -29,14 +29,37 @@ const Measure = () => {
     }
   }, [hasSpoken]);
 
-  const handleAngleUpdate = ({ a }) => {
-    if (showResult) return; // ✅ 顯示結果後不再更新
-
+  const handleAngleUpdate = ({ a, landmarks }) => {
+    if (showResult) return;
+  
+    // const correct = isPoseCorrect(landmarks, 'left');
+  
+    // if (!correct) {
+    //   if (!hasSpoken) {
+    //     const msg = new SpeechSynthesisUtterance(
+    //       'Please raise your arm to the side and keep your elbow straight.'
+    //     );
+    //     msg.lang = 'en-US';
+    //     msg.pitch = 1.2;
+    //     msg.rate = 0.95;
+    //     window.speechSynthesis.cancel();
+    //     window.speechSynthesis.speak(msg);
+    //     setHasSpoken(true);
+  
+    //     setTimeout(() => {
+    //       setHasSpoken(false); // 讓提示可以再次播放
+    //     }, 5000);
+    //   }
+    //   setStableStart(null);
+    //   setCountdown(null);
+    //   return;
+    // }
+  
     if (a > maxAngle) setMaxAngle(a);
-
-    const isHolding = a > 20;
+  
+    const isHolding = a > 10;
     const isStable = Math.abs(a - maxAngle) < 20;
-
+  
     if (isHolding && isStable) {
       if (!stableStart) {
         setStableStart(Date.now());
@@ -45,9 +68,9 @@ const Measure = () => {
         const elapsed = (Date.now() - stableStart) / 1000;
         const timeLeft = Math.ceil(3 - elapsed);
         setCountdown(timeLeft > 0 ? timeLeft : null);
-
+  
         if (elapsed >= 3) {
-          setFinalAngle(maxAngle); // ✅ 固定結果
+          setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
         }
@@ -56,7 +79,7 @@ const Measure = () => {
       setStableStart(null);
       setCountdown(null);
     }
-  };
+  };  
 
   const saveAngleToFirestore = async () => {
     const user = auth.currentUser;
@@ -131,5 +154,35 @@ const Measure = () => {
     </div>
   );
 };
+
+function isPoseCorrect(landmarks, side = 'left') {
+  if (!landmarks || landmarks.length < 17) return false; // ✅ 防止 undefined 或長度不足
+  const shoulder = landmarks[side === 'left' ? 11 : 12];
+  const elbow = landmarks[side === 'left' ? 13 : 14];
+  const wrist = landmarks[side === 'left' ? 15 : 16];
+
+  // 判斷手肘是否幾乎打直（大於120° 視為打直）
+  const elbowAngle = calculateElbowExtensionAngle(landmarks, side);
+  const isElbowStraight = elbowAngle > 120;
+
+  // ✅ 判斷是否是往側邊抬（z 軸深度差距小表示不是往前或往後抬）
+  const depthDiff = Math.abs(wrist.z - shoulder.z); // ✅ z 越接近越正確
+  const isSideLifted = depthDiff < 0.15; // ✅ 門檻值你可以根據實測微調
+
+  return isElbowStraight && isSideLifted;
+}
+
+function calculateElbowExtensionAngle(landmarks, side = 'left') {
+  const shoulder = landmarks[side === 'left' ? 11 : 12];
+  const elbow = landmarks[side === 'left' ? 13 : 14];
+  const wrist = landmarks[side === 'left' ? 15 : 16];
+  const vec1 = [shoulder.x - elbow.x, shoulder.y - elbow.y];
+  const vec2 = [wrist.x - elbow.x, wrist.y - elbow.y];
+  const dot = vec1[0] * vec2[0] + vec1[1] * vec2[1];
+  const len1 = Math.sqrt(vec1[0] ** 2 + vec1[1] ** 2);
+  const len2 = Math.sqrt(vec2[0] ** 2 + vec2[1] ** 2);
+  const angle = Math.acos(dot / (len1 * len2)) * (180 / Math.PI);
+  return angle;
+}
 
 export default Measure;

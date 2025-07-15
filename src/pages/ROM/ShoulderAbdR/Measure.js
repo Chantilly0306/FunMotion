@@ -34,7 +34,7 @@ const Measure = () => {
 
     if (b > maxAngle) setMaxAngle(b);
 
-    const isHolding = b > 20;
+    const isHolding = b > 10;
     const isStable = Math.abs(b - maxAngle) < 20;
 
     if (isHolding && isStable) {

@@ -20,6 +20,7 @@ const PoseTracker = ({
 
   // 儲存左右手最大 elbow extension 角度
   const maxElbowExtendRef = useRef({ left: 0, right: 0 });
+  const maxShoulderFlexRef = useRef({ left: 0, right: 0 });
 
   useEffect(() => {
     const setup = async () => {
@@ -64,6 +65,10 @@ const PoseTracker = ({
       const ctx = canvas.getContext('2d');
       const results = await landmarkerRef.current.detectForVideo(video, performance.now());
       let landmarks = results?.landmarks?.[0];
+      // if (!landmarks || landmarks.length < 17) {
+      //   animationRef.current = requestAnimationFrame(detectPose);
+      //   return;
+      // }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -122,8 +127,12 @@ const PoseTracker = ({
             maxElbowExtendRef.current[side] = elbow;
           }
 
+          if (flex > maxShoulderFlexRef.current[side]) {
+            maxShoulderFlexRef.current[side] = flex;
+          }
+
           onRealtimeAngleUpdate?.({
-            shoulder: flex,
+            shoulder: maxShoulderFlexRef.current[side],
             elbow: maxElbowExtendRef.current[side],
           });
 
@@ -168,9 +177,9 @@ const PoseTracker = ({
         if (mode === 'measure') {
           const angle = calculateVerticalAbductionAngle(landmarks, side);
           if (side === 'left') {
-            onAngleUpdate?.({ a: angle });
+            onAngleUpdate?.({ a: angle, landmarks });
           } else {
-            onAngleUpdate?.({ b: angle });
+            onAngleUpdate?.({ b: angle, landmarks });
           }
         }
       }
@@ -243,10 +252,8 @@ function calculateShoulderFlexionAngle(landmarks, side = 'right') {
   const dot = vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
   const len1 = Math.sqrt(vec1[0]**2 + vec1[1]**2 + vec1[2]**2);
   const len2 = Math.sqrt(vec2[0]**2 + vec2[1]**2 + vec2[2]**2);
-
   const angleRad = Math.acos(dot / (len1 * len2));
   const angleDeg = angleRad * (180 / Math.PI);
-
   return angleDeg;
 }
 
@@ -266,7 +273,7 @@ function calculateElbowExtensionAngle(landmarks, side = 'right') {
 function checkRestPoseByVertical(landmarks, angleL, angleR) {
   const points = [11, 13, 15, 12, 14, 16];
   const allVisible = points.every((i) => landmarks[i]?.visibility > 0.5);
-  return allVisible && angleL < 20 && angleR < 20;
+  return allVisible && angleL < 10 && angleR < 10;
 }
 
 export default PoseTracker;
