@@ -17,8 +17,6 @@ const PoseTracker = ({
   const animationRef = useRef(null);
   const isPoseReadyRef = useRef(false);
   const triggeredRef = useRef(false);
-
-  // 儲存左右手最大 elbow extension 角度
   const maxElbowExtendRef = useRef({ left: 0, right: 0 });
   const maxShoulderFlexRef = useRef({ left: 0, right: 0 });
 
@@ -65,10 +63,6 @@ const PoseTracker = ({
       const ctx = canvas.getContext('2d');
       const results = await landmarkerRef.current.detectForVideo(video, performance.now());
       let landmarks = results?.landmarks?.[0];
-      // if (!landmarks || landmarks.length < 17) {
-      //   animationRef.current = requestAnimationFrame(detectPose);
-      //   return;
-      // }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -175,15 +169,63 @@ const PoseTracker = ({
         }
 
         if (mode === 'measure') {
-          const angle = calculateVerticalAbductionAngle(landmarks, side);
-          if (side === 'left') {
-            onAngleUpdate?.({ a: angle, landmarks });
-          } else {
-            onAngleUpdate?.({ b: angle, landmarks });
-          }
-        }
-      }
+          const shoulder = landmarks[side === 'left' ? 11 : 12];
+          const elbow = landmarks[side === 'left' ? 13 : 14];
+          const wrist = landmarks[side === 'left' ? 15 : 16];
+          const hipL = landmarks[23];
+          const hipR = landmarks[24];
+        
+          const p1 = [landmarks[11].x, landmarks[11].y, landmarks[11].z];
+          const p2 = [(hipL.x + hipR.x) / 2, (hipL.y + hipR.y) / 2, (hipL.z + hipR.z) / 2];
+          const p3 = [landmarks[12].x, landmarks[12].y, landmarks[12].z];
+          const planeNormal = calculatePlaneNormal(p1, p2, p3);
+          const upperArmVector = [
+            elbow.x - shoulder.x,
+            elbow.y - shoulder.y,
+            elbow.z - shoulder.z,
+          ];
+          const angleToPlane = calculateAngleBetweenVectorAndPlane(upperArmVector, planeNormal);
 
+          const shoulder_elbow_z_diff = Math.abs(shoulder.z - elbow.z);
+          const shoulder_wrist_z_diff = Math.abs(shoulder.z - wrist.z);
+
+          const elbow_angle = calculateElbowExtensionAngle(landmarks, side);
+          const shoulder_abd_angle = calculateVerticalAbductionAngle(landmarks, side);
+
+          const features = [
+            elbow_angle,
+            shoulder_abd_angle,
+            angleToPlane,
+            shoulder_elbow_z_diff,
+            shoulder_wrist_z_diff,
+          ];
+          
+          // 確保 features 內容正確
+          console.log("Sending features to API:", features);
+          
+          try {
+            const res = await fetch("http://127.0.0.1:8000/predict", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ features }),
+            });
+          
+            if (!res.ok) {
+              const errText = await res.text();
+              console.error("API returned error:", res.status, errText);
+              return;
+            }
+          
+            const { correct } = await res.json();
+            console.log("Pose correctness:", correct);
+          } catch (e) {
+            console.warn("Prediction API error:", e);
+          }
+          
+        } 
+      }
       animationRef.current = requestAnimationFrame(detectPose);
     };
 
@@ -274,6 +316,24 @@ function checkRestPoseByVertical(landmarks, angleL, angleR) {
   const points = [11, 13, 15, 12, 14, 16];
   const allVisible = points.every((i) => landmarks[i]?.visibility > 0.5);
   return allVisible && angleL < 10 && angleR < 10;
+}
+
+function calculateAngleBetweenVectorAndPlane(v, normal) {
+  const dot = v[0]*normal[0] + v[1]*normal[1] + v[2]*normal[2];
+  const normV = Math.sqrt(v[0]**2 + v[1]**2 + v[2]**2);
+  const normN = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2);
+  const angle = Math.acos(dot / (normV * normN)) * (180 / Math.PI);
+  return Math.abs(90 - angle);
+}
+
+function calculatePlaneNormal(p1, p2, p3) {
+  const v1 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+  const v2 = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+  return [
+    v1[1]*v2[2] - v1[2]*v2[1],
+    v1[2]*v2[0] - v1[0]*v2[2],
+    v1[0]*v2[1] - v1[1]*v2[0],
+  ];
 }
 
 export default PoseTracker;

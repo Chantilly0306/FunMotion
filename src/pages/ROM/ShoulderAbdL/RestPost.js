@@ -13,8 +13,8 @@ const RestPost = () => {
       const msg = new SpeechSynthesisUtterance(
         'Sit or stand. Let both arms rest by your sides naturally. Please keep the full arm in view.'
       );
-      msg.lang = 'en-US';
-      msg.pitch = 1.2;
+      msg.lang = 'en-GB';
+      msg.pitch = 1.4;
       msg.rate = 0.95;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(msg);

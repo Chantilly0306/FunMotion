@@ -12,7 +12,9 @@ const Measure = () => {
   const [stableStart, setStableStart] = useState(null);
   const [countdown, setCountdown] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [finalAngle, setFinalAngle] = useState(null); // ❗ 固定的角度結果
+  const [finalAngle, setFinalAngle] = useState(null);
+  const [poseCorrect, setPoseCorrect] = useState(true);
+  const [stableAngle, setStableAngle] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,8 +22,8 @@ const Measure = () => {
       const msg = new SpeechSynthesisUtterance(
         'Raise your left arm outward as high as possible without pain, and hold it for 3 seconds.'
       );
-      msg.lang = 'en-US';
-      msg.pitch = 1.2;
+      msg.lang = 'en-GB';
+      msg.pitch = 1.4;
       msg.rate = 0.95;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(msg);
@@ -29,31 +31,46 @@ const Measure = () => {
     }
   }, [hasSpoken]);
 
-  const handleAngleUpdate = ({ a, landmarks }) => {
+  const handleAngleUpdate = async ({ a, landmarks, features }) => {
     if (showResult) return;
-  
-    // const correct = isPoseCorrect(landmarks, 'left');
-  
-    // if (!correct) {
-    //   if (!hasSpoken) {
-    //     const msg = new SpeechSynthesisUtterance(
-    //       'Please raise your arm to the side and keep your elbow straight.'
-    //     );
-    //     msg.lang = 'en-US';
-    //     msg.pitch = 1.2;
-    //     msg.rate = 0.95;
-    //     window.speechSynthesis.cancel();
-    //     window.speechSynthesis.speak(msg);
-    //     setHasSpoken(true);
-  
-    //     setTimeout(() => {
-    //       setHasSpoken(false); // 讓提示可以再次播放
-    //     }, 5000);
-    //   }
-    //   setStableStart(null);
-    //   setCountdown(null);
-    //   return;
-    // }
+
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ features }),
+      });
+
+      const data = await response.json();
+      const correct = data.correct;
+      setPoseCorrect(correct);
+
+      if (!correct) {
+        if (!hasSpoken) {
+          const msg = new SpeechSynthesisUtterance(
+            'Please raise your arm to the side and keep your elbow straight.'
+          );
+          msg.lang = 'en-GB';
+          msg.pitch = 1.4;
+          msg.rate = 0.95;
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(msg);
+          setHasSpoken(true);
+
+          setTimeout(() => {
+            setHasSpoken(false);
+          }, 5000);
+        }
+        setStableStart(null);
+        setCountdown(null);
+        return;
+      }
+    } catch (error) {
+      console.error('Error calling prediction API:', error);
+      return;
+    }
   
     if (a > maxAngle) setMaxAngle(a);
   
@@ -73,6 +90,7 @@ const Measure = () => {
           setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
+          setStableAngle(a); // 每次符合條件就更新穩定基準角度
         }
       }
     } else {
@@ -154,35 +172,5 @@ const Measure = () => {
     </div>
   );
 };
-
-function isPoseCorrect(landmarks, side = 'left') {
-  if (!landmarks || landmarks.length < 17) return false; // ✅ 防止 undefined 或長度不足
-  const shoulder = landmarks[side === 'left' ? 11 : 12];
-  const elbow = landmarks[side === 'left' ? 13 : 14];
-  const wrist = landmarks[side === 'left' ? 15 : 16];
-
-  // 判斷手肘是否幾乎打直（大於120° 視為打直）
-  const elbowAngle = calculateElbowExtensionAngle(landmarks, side);
-  const isElbowStraight = elbowAngle > 120;
-
-  // ✅ 判斷是否是往側邊抬（z 軸深度差距小表示不是往前或往後抬）
-  const depthDiff = Math.abs(wrist.z - shoulder.z); // ✅ z 越接近越正確
-  const isSideLifted = depthDiff < 0.15; // ✅ 門檻值你可以根據實測微調
-
-  return isElbowStraight && isSideLifted;
-}
-
-function calculateElbowExtensionAngle(landmarks, side = 'left') {
-  const shoulder = landmarks[side === 'left' ? 11 : 12];
-  const elbow = landmarks[side === 'left' ? 13 : 14];
-  const wrist = landmarks[side === 'left' ? 15 : 16];
-  const vec1 = [shoulder.x - elbow.x, shoulder.y - elbow.y];
-  const vec2 = [wrist.x - elbow.x, wrist.y - elbow.y];
-  const dot = vec1[0] * vec2[0] + vec1[1] * vec2[1];
-  const len1 = Math.sqrt(vec1[0] ** 2 + vec1[1] ** 2);
-  const len2 = Math.sqrt(vec2[0] ** 2 + vec2[1] ** 2);
-  const angle = Math.acos(dot / (len1 * len2)) * (180 / Math.PI);
-  return angle;
-}
 
 export default Measure;

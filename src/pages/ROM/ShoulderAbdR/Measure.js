@@ -13,6 +13,8 @@ const Measure = () => {
   const [countdown, setCountdown] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [finalAngle, setFinalAngle] = useState(null);
+  const [poseCorrect, setPoseCorrect] = useState(true);
+  const [stableAngle, setStableAngle] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,8 +22,8 @@ const Measure = () => {
       const msg = new SpeechSynthesisUtterance(
         'Raise your right arm outward as high as possible without pain, and hold it for 3 seconds.'
       );
-      msg.lang = 'en-US';
-      msg.pitch = 1.2;
+      msg.lang = 'en-GB';
+      msg.pitch = 1.4;
       msg.rate = 0.95;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(msg);
@@ -29,8 +31,46 @@ const Measure = () => {
     }
   }, [hasSpoken]);
 
-  const handleAngleUpdate = ({ b }) => {
+  const handleAngleUpdate = async ({ b, landmarks, features }) => {
     if (showResult) return;
+
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ features }),
+      });
+
+      const data = await response.json();
+      const correct = data.correct;
+      setPoseCorrect(correct);
+
+      if (!correct) {
+        if (!hasSpoken) {
+          const msg = new SpeechSynthesisUtterance(
+            'Please raise your arm to the side and keep your elbow straight.'
+          );
+          msg.lang = 'en-GB';
+          msg.pitch = 1.4;
+          msg.rate = 0.95;
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(msg);
+          setHasSpoken(true);
+
+          setTimeout(() => {
+            setHasSpoken(false);
+          }, 5000);
+        }
+        setStableStart(null);
+        setCountdown(null);
+        return;
+      }
+    } catch (error) {
+      console.error('Error calling prediction API:', error);
+      return;
+    }
 
     if (b > maxAngle) setMaxAngle(b);
 
@@ -50,6 +90,7 @@ const Measure = () => {
           setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
+          setStableAngle(b); // 每次符合條件就更新穩定基準角度
         }
       }
     } else {
