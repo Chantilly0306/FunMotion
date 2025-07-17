@@ -118,10 +118,6 @@ const Measure = () => {
 
   return (
     <div className="measure-post-container">
-      <button onClick={testAPIConnection} style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
-  測試 API
-</button>
-
       <div className="camera-section">
         <PoseTracker
           side="left"
