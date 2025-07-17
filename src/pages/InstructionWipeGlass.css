@@ -81,7 +81,7 @@ body {
 .start-button {
   padding: 1rem 2.5rem;
   font-size: 1.5rem;
-  background-color: #28a745;
+  background-color: #21bcbf;
   color: white;
   border: none;
   border-radius: 12px;
@@ -92,5 +92,5 @@ body {
 }
 
 .start-button:hover {
-  background-color: #218838;
+  background-color: #2195bf;
 }

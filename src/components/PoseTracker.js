@@ -70,33 +70,37 @@ const PoseTracker = ({
         landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
 
         if (mode === 'badminton') {
+          const leftWrist = landmarks[15];
           const rightWrist = landmarks[16];
+          const leftShoulder = landmarks[11];
           const rightShoulder = landmarks[12];
         
-          if (rightWrist.visibility > 0.5 && rightShoulder.visibility > 0.5) {
-            const isRaised = rightWrist.y < rightShoulder.y;
-            let direction = 'none';
+          let direction = 'none';
         
-            if (isRaised) {
-              if (rightWrist.x < 0.33) {
-                direction = 'left';
-              } else if (rightWrist.x > 0.66) {
-                direction = 'right';
-              } else {
-                direction = 'center';
-              }
-            }
+          const leftRaised = leftWrist.visibility > 0.5 && leftShoulder.visibility > 0.5 && leftWrist.y < leftShoulder.y;
+          const rightRaised = rightWrist.visibility > 0.5 && rightShoulder.visibility > 0.5 && rightWrist.y < rightShoulder.y;
         
-            if (direction !== 'none' && !triggeredRef.current) {
-              triggeredRef.current = true;
-              onPoseReady?.(direction);
+          const decideDirection = (wrist) => {
+            if (wrist.x < 0.33) return 'left';
+            else if (wrist.x > 0.66) return 'right';
+            else return 'mid';
+          };
         
-              setTimeout(() => {
-                triggeredRef.current = false;
-              }, 2000); // 每 2 秒允許一次偵測
-            }
+          if (rightRaised) {
+            direction = decideDirection(rightWrist);
+          } else if (leftRaised) {
+            direction = decideDirection(leftWrist);
           }
-        }        
+        
+          if (direction !== 'none' && !triggeredRef.current) {
+            triggeredRef.current = true;
+            onPoseReady?.(direction);
+        
+            setTimeout(() => {
+              triggeredRef.current = false;
+            }, 2000); // 每 2 秒偵測一次
+          }
+        }                
 
         if (mode === 'wipe') {
           const wristIndex = side === 'right' ? 16 : 15;
@@ -142,7 +146,7 @@ const PoseTracker = ({
             }
           }
         } else {
-          const indices = [12, 14, 16];
+          const indices = [11, 12];
           for (const i of indices) {
             const { x, y, visibility } = landmarks[i];
             if (visibility > 0.5) {
@@ -200,9 +204,6 @@ const PoseTracker = ({
             shoulder_wrist_z_diff,
           ];
           
-          // 確保 features 內容正確
-          console.log("Sending features to API:", features);
-          
           try {
             const res = await fetch("http://127.0.0.1:8000/predict", {
               method: "POST",
@@ -219,6 +220,7 @@ const PoseTracker = ({
             }
           
             const { correct } = await res.json();
+            console.log("Features sent:", features);
             console.log("Pose correctness:", correct);
           } catch (e) {
             console.warn("Prediction API error:", e);

@@ -15,6 +15,7 @@ const Measure = () => {
   const [finalAngle, setFinalAngle] = useState(null);
   const [poseCorrect, setPoseCorrect] = useState(true);
   const [stableAngle, setStableAngle] = useState(null);
+  const [showWarnings, setShowWarnings] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +31,11 @@ const Measure = () => {
       setHasSpoken(true);
     }
   }, [hasSpoken]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWarnings(true), 3000); // 3 秒後才允許顯示警告
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAngleUpdate = async ({ a, landmarks, features }) => {
     if (showResult) return;
@@ -47,29 +53,8 @@ const Measure = () => {
       const correct = data.correct;
       setPoseCorrect(correct);
 
-      if (!correct) {
-        if (!hasSpoken) {
-          const msg = new SpeechSynthesisUtterance(
-            'Please raise your arm to the side and keep your elbow straight.'
-          );
-          msg.lang = 'en-GB';
-          msg.pitch = 1.4;
-          msg.rate = 0.95;
-          window.speechSynthesis.cancel();
-          window.speechSynthesis.speak(msg);
-          setHasSpoken(true);
-
-          setTimeout(() => {
-            setHasSpoken(false);
-          }, 5000);
-        }
-        setStableStart(null);
-        setCountdown(null);
-        return;
-      }
     } catch (error) {
       console.error('Error calling prediction API:', error);
-      return;
     }
   
     if (a > maxAngle) setMaxAngle(a);
@@ -133,6 +118,9 @@ const Measure = () => {
         />
         {countdown !== null && !showResult && (
           <div className="countdown-overlay">{countdown}</div>
+        )}
+        {!poseCorrect && !showResult && showWarnings && (
+          <div className="pose-warning">Please raise your arm to the side<br />and keep your elbow straight.</div>
         )}
       </div>
       <div className="instruction-section">

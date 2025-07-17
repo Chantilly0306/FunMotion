@@ -1,30 +1,28 @@
-# main.py
-import joblib
+# backend/main.py
+import joblib # to load ml model
 from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List
-from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel # for models with nested data structures. To define multiple fields, each with their own types and validations.
+from typing import List # for many values like vectors
+from fastapi.middleware.cors import CORSMiddleware # Cross-Origin-Resource-Sharing. bridge between OS/database and app
 
-# 載入模型
-model = joblib.load("rf_model.pkl")
+model = joblib.load("rf_model.pkl") # or using svc_model.pkl with 3 features
 
-# 定義輸入格式
-class PoseFeatures(BaseModel):
+# define PoseFeatures to be a list of float numbers
+class PoseFeatures(BaseModel): # define format of parameters
     features: List[float] # [elbow_angle, shoulder_abd_angle, angle_to_plane, z_diff_elbow, z_diff_wrist]
 
-# 建立 FastAPI 實例
 app = FastAPI()
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 或指定你的前端網址，如 ["http://localhost:3000"]
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    CORSMiddleware, # decide which frontend can get resource from my backend API
+    allow_origins=["*"],  # or "http://localhost:3000
+    allow_credentials=True, # allow sending cookies or HTTP requests
+    allow_methods=["*"], # allow all HTTP methods
+    allow_headers=["*"], # HTTP POST request sent to backend from frontend
 )
 
-@app.post("/predict")
-def predict_pose(data: PoseFeatures):
-    X = [data.features]  # 轉成 2D 陣列
-    pred = model.predict(X)
-    return {"correct": bool(pred[0])}
+@app.post("/predict") # HTTP POST requests to API
+def predict_pose(data: PoseFeatures): # turn JSON data from frontend to PoseFeatures' object
+    X = [data.features]
+    pred = model.predict(X) # predict(x) will return a list like [1] or [0]
+    return {"correctness": bool(pred[0])} # return True/False

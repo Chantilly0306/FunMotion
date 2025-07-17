@@ -15,13 +15,10 @@ import ShoulderAbdLRest from './pages/ROM/ShoulderAbdL/RestPost';
 import ShoulderAbdLMeasure from './pages/ROM/ShoulderAbdL/Measure';
 import ShoulderAbdRRest from './pages/ROM/ShoulderAbdR/RestPost';
 import ShoulderAbdRMeasure from './pages/ROM/ShoulderAbdR/Measure';
-import ShoulderFlexLRest from './pages/ROM/ShoulderFlexL/RestPost';
-import ShoulderFlexLMeasure from './pages/ROM/ShoulderFlexL/Measure';
-import ShoulderFlexRRest from './pages/ROM/ShoulderFlexR/RestPost';
-import ShoulderFlexRMeasure from './pages/ROM/ShoulderFlexR/Measure';
 import GameWipeGlass from './pages/GameWipeGlass';
 import InstructionWipeGlass from './pages/InstructionWipeGlass';
 import GameBadminton from './pages/GameBadminton';
+import InstructionBadminton from './pages/InstructionBadminton';
 
 function App() {
   return (
@@ -41,13 +38,10 @@ function App() {
         <Route path="/rom/shoulder-abd-l/measure" element={<ShoulderAbdLMeasure />} />
         <Route path="/rom/shoulder-abd-r/rest" element={<ShoulderAbdRRest />} />
         <Route path="/rom/shoulder-abd-r/measure" element={<ShoulderAbdRMeasure />} />
-        <Route path="/rom/shoulder-flex-l/rest" element={<ShoulderFlexLRest />} />
-        <Route path="/rom/shoulder-flex-l/measure" element={<ShoulderFlexLMeasure />} />
-        <Route path="/rom/shoulder-flex-r/rest" element={<ShoulderFlexRRest />} />
-        <Route path="/rom/shoulder-flex-r/measure" element={<ShoulderFlexRMeasure />} />
         <Route path="/game-wipe-glass" element={<GameWipeGlass />} />
         <Route path="/instruction-wipe-glass" element={<InstructionWipeGlass />} />
         <Route path="/game-badminton" element={<GameBadminton />} />
+        <Route path="/instruction-badminton" element={<InstructionBadminton />} />
       </Routes>
     </Router>
   );

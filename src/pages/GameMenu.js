@@ -13,7 +13,7 @@ const GameMenu = () => {
           <Link to="/rom/shoulder-abd-l/rest" className="menu-link">
             <img src="/measure-rom.png" alt="ROM Icon" className="menu-icon" />
             <p className="menu-label">Measure Range of Motion</p>
-            <p className="menu-note">If this is your first time, please start by measuring your joint range.</p>
+            <p className="menu-note">If this is your first time log in, please start by measuring your joint range.</p>
           </Link>
         </div>
 
@@ -40,10 +40,10 @@ const GameMenu = () => {
         </div>
 
         <div className="game-menu-card">
-          <Link to="/game-badminton" className="menu-link">
+          <Link to="/instruction-badminton" className="menu-link">
             <img src="/badminton-icon.png" alt="Badminton Icon" className="menu-icon" />
             <p className="menu-label">Badminton Game</p>
-            <p className="menu-note">This game has not been built successfully</p>
+            <p className="menu-note">This game has not been built successfully but you can see the scene</p>
           </Link>
         </div>
       </div>

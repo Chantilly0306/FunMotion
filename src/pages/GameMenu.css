@@ -39,8 +39,8 @@
   }
   
   .game-menu-card.small {
-    width: 180px;
-    padding: 16px;
+    width: 150px;
+    padding: 20px;
   }
   
   .menu-link {
@@ -49,13 +49,13 @@
   }
   
   .menu-icon {
-    width: 240px;
-    height: auto;
-    margin-bottom: 20px;
+    height: 200px;
+    width: auto;
   }  
   
   .menu-icon.small {
     width: 70px;
+    height: auto;
   }
   
   .menu-label {
