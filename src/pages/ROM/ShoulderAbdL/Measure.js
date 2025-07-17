@@ -42,7 +42,7 @@ const Measure = () => {
     if (showResult || isFinalized) return;
 
     try {
-      const response = await fetch(process.env.REACT_APP_API_URL + "/predict", {
+      const response = await fetch(process.env.REACT_APP_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ const Measure = () => {
       });
 
       const data = await response.json();
-      const correct = data.correct;
+      const correct = data.correctness;
       setPoseCorrect(correct);
 
       console.log("Features sent:", features);
