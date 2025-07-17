@@ -14,8 +14,8 @@ const Measure = () => {
   const [showResult, setShowResult] = useState(false);
   const [finalAngle, setFinalAngle] = useState(null);
   const [stableAngle, setStableAngle] = useState(null);
-  // const [poseCorrect, setPoseCorrect] = useState(true);
-  // const [showWarnings, setShowWarnings] = useState(false);
+  const [poseCorrect, setPoseCorrect] = useState(true);
+  const [showWarnings, setShowWarnings] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
   const navigate = useNavigate();
 
@@ -32,53 +32,34 @@ const Measure = () => {
       setHasSpoken(true);
     }
   }, [hasSpoken]);
-
-  const testAPIConnection = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/predict`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ features: [90, 45, 30, 0.1, 0.2] }), // 隨便一筆假資料測試
-      });
   
-      const data = await response.json();
-      alert(`✅ API Connected!\nPrediction result: ${data.correctness}`);
-    } catch (error) {
-      alert(`❌ API Connection Failed\n${error}`);
-      console.error('API test error:', error);
-    }
-  };
-  
-
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setShowWarnings(true), 3000); // 3 秒後才允許顯示警告
-  //   return () => clearTimeout(timer);
-  // }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWarnings(true), 3000); // 3 秒後才允許顯示警告
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAngleUpdate = async ({ a, landmarks, features }) => {
     if (showResult || isFinalized) return;
 
-    // try {
-    //   const response = await fetch(process.env.REACT_APP_API_URL, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ features }),
-    //   });
+    try {
+      const response = await fetch(process.env.REACT_APP_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ features }),
+      });
 
-    //   const data = await response.json();
-    //   const correct = data.correctness;
-    //   setPoseCorrect(correct);
+      const data = await response.json();
+      const correct = data.correctness;
+      setPoseCorrect(correct);
 
-    //   console.log("Features sent:", features);
-    //   console.log("Pose correctness:", correct);
+      console.log("Features sent:", features);
+      console.log("Pose correctness:", correct);
 
-    // } catch (error) {
-    //   console.error('Error calling prediction API:', error);
-    // }
+    } catch (error) {
+      console.error('Error calling prediction API:', error);
+    }
   
     if (a > maxAngle) setMaxAngle(a);
   
@@ -150,9 +131,9 @@ const Measure = () => {
         {countdown !== null && !showResult && (
           <div className="countdown-overlay">{countdown}</div>
         )}
-        {/* {!poseCorrect && !showResult && showWarnings && (
+        {!poseCorrect && !showResult && showWarnings && (
           <div className="pose-warning">Please raise your arm to the side<br />and keep your elbow straight.</div>
-        )} */}
+        )}
       </div>
       <div className="instruction-section">
         {showResult ? (
