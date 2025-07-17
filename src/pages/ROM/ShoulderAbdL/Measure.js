@@ -16,6 +16,7 @@ const Measure = () => {
   const [poseCorrect, setPoseCorrect] = useState(true);
   const [stableAngle, setStableAngle] = useState(null);
   const [showWarnings, setShowWarnings] = useState(false);
+  const [isFinalized, setIsFinalized] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +39,7 @@ const Measure = () => {
   }, []);
 
   const handleAngleUpdate = async ({ a, landmarks, features }) => {
-    if (showResult) return;
+    if (showResult || isFinalized) return;
 
     try {
       const response = await fetch(process.env.REACT_APP_API_URL + "/predict", {
@@ -81,6 +82,7 @@ const Measure = () => {
           setShowResult(true);
           setCountdown(null);
           setStableAngle(a); // 每次符合條件就更新穩定基準角度
+          setIsFinalized(true);
           return;
         }
       }

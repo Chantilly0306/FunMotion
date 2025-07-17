@@ -256,25 +256,18 @@ function calculateShoulderFlexionAngle(landmarks, side = 'right') {
   const isRight = side === 'right';
   const shoulder = landmarks[isRight ? 12 : 11];
   const elbow = landmarks[isRight ? 14 : 13];
-  const hip = landmarks[isRight ? 24 : 23];
-  const vec1 = [
-    hip.x - shoulder.x,
-    hip.y - shoulder.y,
-    hip.z - shoulder.z,
+  const upperArm = [
+    elbow.x - shoulder.x,
+    elbow.y - shoulder.y,
+    elbow.z - shoulder.z,
   ];
-
-  const vec2 = [
-    shoulder.x - elbow.x,
-    shoulder.y - elbow.y,
-    shoulder.z - elbow.z,
-  ];
-
-  const dot = vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
-  const len1 = Math.sqrt(vec1[0]**2 + vec1[1]**2 + vec1[2]**2);
-  const len2 = Math.sqrt(vec2[0]**2 + vec2[1]**2 + vec2[2]**2);
+  const vertical = [0, 1, 0];  // Y 軸朝下，因為 Mediapipe 的 y 軸向下是正方向
+  const dot = upperArm[0]*vertical[0] + upperArm[1]*vertical[1] + upperArm[2]*vertical[2];
+  const len1 = Math.sqrt(upperArm[0]**2 + upperArm[1]**2 + upperArm[2]**2);
+  const len2 = Math.sqrt(vertical[0]**2 + vertical[1]**2 + vertical[2]**2);
   const angleRad = Math.acos(dot / (len1 * len2));
   const angleDeg = angleRad * (180 / Math.PI);
-  return angleDeg;
+  return angleDeg; // 0 = 垂手下垂，90 = 向前舉平，180 = 舉過頭
 }
 
 function calculateElbowExtensionAngle(landmarks, side = 'right') {
