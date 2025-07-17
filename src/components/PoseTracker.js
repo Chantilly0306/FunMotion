@@ -146,7 +146,7 @@ const PoseTracker = ({
             }
           }
         } else {
-          const indices = [11, 12];
+          const indices = [15, 16];
           for (const i of indices) {
             const { x, y, visibility } = landmarks[i];
             if (visibility > 0.5) {
@@ -203,29 +203,7 @@ const PoseTracker = ({
             shoulder_elbow_z_diff,
             shoulder_wrist_z_diff,
           ];
-
-          try {
-            const res = await fetch(process.env.REACT_APP_API_URL + "/predict", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ features }),
-            });
-          
-            if (!res.ok) {
-              const errText = await res.text();
-              console.error("API returned error:", res.status, errText);
-              return;
-            }
-          
-            const { correct } = await res.json();
-            console.log("Features sent:", features);
-            console.log("Pose correctness:", correct);
-          } catch (e) {
-            console.warn("Prediction API error:", e);
-          }
-          
+          onAngleUpdate?.({ a, b, landmarks, features });         
         } 
       }
       animationRef.current = requestAnimationFrame(detectPose);

@@ -53,6 +53,9 @@ const Measure = () => {
       const correct = data.correct;
       setPoseCorrect(correct);
 
+      console.log("Features sent:", features);
+      console.log("Pose correctness:", correct);
+
     } catch (error) {
       console.error('Error calling prediction API:', error);
     }
