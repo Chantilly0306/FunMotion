@@ -15,7 +15,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware, # decide which frontend can get resource from my backend API
-    allow_origins=["https://funmotion.vercel.app/"],
+    allow_origins=["https://funmotion.vercel.app"],
     allow_credentials=True, # allow sending cookies or HTTP requests
     allow_methods=["*"], # allow all HTTP methods
     allow_headers=["*"], # HTTP POST request sent to backend from frontend
