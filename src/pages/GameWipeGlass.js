@@ -14,6 +14,7 @@ export default function GameWipeGlass() {
   const [startTime, setStartTime] = useState(null);
   const [shoulderFlex, setShoulderFlex] = useState(0);
   const [elbowExtend, setElbowExtend] = useState(0);
+  const frameCountRef = useRef(0);
   const overlayRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +53,9 @@ export default function GameWipeGlass() {
     const y = relY * canvas.height;
 
     ctx.clearRect(x - eraseRadius / 2, y - eraseRadius / 2, eraseRadius, eraseRadius);
+
+    frameCountRef.current++;
+    if (frameCountRef.current % 5 !== 0) return;
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;

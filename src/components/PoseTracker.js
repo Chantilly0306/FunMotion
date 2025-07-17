@@ -116,15 +116,15 @@ const PoseTracker = ({
             }
           }
 
-          const flex = calculateShoulderFlexionAngle(landmarks, side);
+          const shoulder = calculateShoulderFlexionAngle(landmarks, side);
           const elbow = calculateElbowExtensionAngle(landmarks, side);
 
           if (elbow > maxElbowExtendRef.current[side]) {
             maxElbowExtendRef.current[side] = elbow;
           }
 
-          if (flex > maxShoulderFlexRef.current[side]) {
-            maxShoulderFlexRef.current[side] = flex;
+          if (shoulder > maxShoulderFlexRef.current[side]) {
+            maxShoulderFlexRef.current[side] = shoulder;
           }
 
           onRealtimeAngleUpdate?.({
@@ -200,7 +200,7 @@ const PoseTracker = ({
             angleToPlane,
             shoulder_elbow_z_diff,
             shoulder_wrist_z_diff,
-          ];
+          ].map((v) => (isNaN(v) || v === undefined ? 0 : v));
           onAngleUpdate?.({ a, b, landmarks, features });         
         } 
       }

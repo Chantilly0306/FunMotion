@@ -71,14 +71,17 @@ const Measure = () => {
         setCountdown(3);
       } else {
         const elapsed = (Date.now() - stableStart) / 1000;
-        const timeLeft = Math.ceil(3 - elapsed);
-        setCountdown(timeLeft > 0 ? timeLeft : null);
+        const newCountdown = Math.ceil(3 - elapsed);
+        if (newCountdown !== countdown) {
+          setCountdown(newCountdown > 0 ? newCountdown : null);
+        }
   
         if (elapsed >= 3) {
           setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
           setStableAngle(a); // 每次符合條件就更新穩定基準角度
+          return;
         }
       }
     } else {
