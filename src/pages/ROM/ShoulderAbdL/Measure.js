@@ -14,7 +14,7 @@ const Measure = () => {
   const [showResult, setShowResult] = useState(false);
   const [finalAngle, setFinalAngle] = useState(null);
   const [stableAngle, setStableAngle] = useState(null);
-  const [poseCorrect, setPoseCorrect] = useState(true);
+  const [poseCorrect, setPoseCorrect] = useState(false);
   const [showWarnings, setShowWarnings] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
   const navigate = useNavigate();
@@ -41,25 +41,25 @@ const Measure = () => {
   const handleAngleUpdate = async ({ a, landmarks, features }) => {
     if (showResult || isFinalized) return;
 
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/predict`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ features }),
-      });
+    // try {
+    //   const response = await fetch(`${process.env.REACT_APP_API_URL}/predict`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ features }),
+    //   });
 
-      const data = await response.json();
-      const correct = data.correctness;
-      setPoseCorrect(correct);
+    //   const data = await response.json();
+    //   const correct = data.correctness;
+    //   setPoseCorrect(correct);
 
-      console.log("Features sent:", features);
-      console.log("Pose correctness:", correct);
+    //   console.log("Features sent:", features);
+    //   console.log("Pose correctness:", correct);
 
-    } catch (error) {
-      console.error('Error calling prediction API:', error);
-    }
+    // } catch (error) {
+    //   console.error('Error calling prediction API:', error);
+    // }
   
     if (a > maxAngle) setMaxAngle(a);
   
