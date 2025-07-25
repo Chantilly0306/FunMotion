@@ -31,7 +31,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 60px; /* 給右上角空間 */
+  margin-top: 60px;
 }
 
 .dashboard-header select {
@@ -77,8 +77,8 @@
 
 .chart-section {
   margin: 30px auto;
-  max-width: 1000px;     /* 限制最大寬度 */
-  height: 700px;        /* 固定圖表高度 */
+  max-width: 1000px;
+  height: 700px;
   padding: 10px 20px;
   background-color: white;
   border-radius: 12px;

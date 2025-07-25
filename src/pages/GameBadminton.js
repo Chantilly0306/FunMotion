@@ -35,7 +35,7 @@ const GameBadminton = () => {
     } else {
       alert('Miss ❌');
     }
-    setExpectedDirection(null); // 重置等待下一球
+    setExpectedDirection(null);
   };
 
   return (

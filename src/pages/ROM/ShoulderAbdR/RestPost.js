@@ -32,7 +32,7 @@ const RestPost = () => {
         <PoseTracker
           side="right"
           mode="rest"
-          onPoseReady={() => {}} // 語音改由 useEffect 播放
+          onPoseReady={() => {}}
           onRestConfirmed={handleRestConfirmed}
         />
       </div>

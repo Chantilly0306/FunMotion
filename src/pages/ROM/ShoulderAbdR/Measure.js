@@ -34,7 +34,7 @@ const Measure = () => {
   }, [hasSpoken]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowWarnings(true), 3000); // 3 秒後才允許顯示警告
+    const timer = setTimeout(() => setShowWarnings(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -81,7 +81,7 @@ const Measure = () => {
           setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
-          setStableAngle(b); // 每次符合條件就更新穩定基準角度
+          setStableAngle(b);
           setIsFinalized(true);
           return;
         }

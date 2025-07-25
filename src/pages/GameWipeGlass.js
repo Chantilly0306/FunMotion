@@ -19,7 +19,6 @@ export default function GameWipeGlass() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 取得選項（InstructionWipeGame 傳入）
   const { side = 'right', difficulty = 'easy' } = location.state || {};
   const eraseRadius = difficulty === 'easy' ? 200 : difficulty === 'medium' ? 150 : 100;
 

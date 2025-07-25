@@ -96,7 +96,7 @@ const PoseTracker = ({
         
             setTimeout(() => {
               triggeredRef.current = false;
-            }, 2000); // 每 2 秒偵測一次
+            }, 2000);
           }
         }                
 
@@ -261,13 +261,13 @@ function calculateShoulderFlexionAngle(landmarks, side = 'right') {
     elbow.y - shoulder.y,
     elbow.z - shoulder.z,
   ];
-  const vertical = [0, 1, 0];  // Y 軸朝下，因為 Mediapipe 的 y 軸向下是正方向
+  const vertical = [0, 1, 0];
   const dot = upperArm[0]*vertical[0] + upperArm[1]*vertical[1] + upperArm[2]*vertical[2];
   const len1 = Math.sqrt(upperArm[0]**2 + upperArm[1]**2 + upperArm[2]**2);
   const len2 = Math.sqrt(vertical[0]**2 + vertical[1]**2 + vertical[2]**2);
   const angleRad = Math.acos(dot / (len1 * len2));
   const angleDeg = angleRad * (180 / Math.PI);
-  return angleDeg; // 0 = 垂手下垂，90 = 向前舉平，180 = 舉過頭
+  return angleDeg;
 }
 
 function calculateElbowExtensionAngle(landmarks, side = 'right') {
