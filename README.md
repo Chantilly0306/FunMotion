@@ -9,12 +9,12 @@ A web-based rehabilitation game for upper limb training using pose estimation an
 ## Technologies
 React.js • Firebase • MediaPipe • FastAPI • SVM
 
-![screenshot](./images/screenshot01.png)
-![screenshot](./images/screenshot03.png)
-![screenshot](./images/screenshot06.png)
-![screenshot](./images/screenshot07.png)
-![screenshot](./images/screenshot09.png)
-![screenshot](./images/screenshot11.png)
-![screenshot](./images/screenshot14.png)
-![screenshot](./images/screenshot15.png)
-![screenshot](./images/screenshot16.png)
+![screenshot](./images/Screenshot01.png)
+![screenshot](./images/Screenshot03.png)
+![screenshot](./images/Screenshot06.png)
+![screenshot](./images/Screenshot07.png)
+![screenshot](./images/Screenshot09.png)
+![screenshot](./images/Screenshot11.png)
+![screenshot](./images/Screenshot14.png)
+![screenshot](./images/Screenshot15.png)
+![screenshot](./images/Screenshot16.png)
