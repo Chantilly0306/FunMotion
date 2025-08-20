@@ -8,7 +8,7 @@ const PoseTracker = ({
   side = 'left',
   mode = 'rest',
   onRestConfirmed,
-  onRightWristMove,
+  onWristMove,
   onRealtimeAngleUpdate,
 }) => {
   const videoRef = useRef(null);
@@ -21,24 +21,24 @@ const PoseTracker = ({
   const maxShoulderFlexRef = useRef({ left: 0, right: 0 });
 
   useEffect(() => {
-    const setup = async () => {
-      const vision = await FilesetResolver.forVisionTasks('/wasm');
+    const setup = async () => { // load the model and camera
+      const vision = await FilesetResolver.forVisionTasks('/wasm'); // the file to load mediapipe
 
-      const landmarker = await PoseLandmarker.createFromOptions(vision, {
+      const landmarker = await PoseLandmarker.createFromOptions(vision, { // set up pose detector
         baseOptions: {
           modelAssetPath: '/wasm/pose_landmarker_lite.task',
           delegate: 'GPU',
         },
         runningMode: 'VIDEO',
-        numPoses: 1,
+        numPoses: 1, // detect at most 1 person in each frame
       });
 
       landmarkerRef.current = landmarker;
 
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true }); // get permission to MediaStream only video without audio
       const video = videoRef.current;
       if (!video) return;
-      video.srcObject = stream;
+      video.srcObject = stream; // video source = camera's live view
       video.onloadedmetadata = () => {
         video.play();
         video.width = video.videoWidth;
@@ -50,22 +50,22 @@ const PoseTracker = ({
     };
 
     const detectPose = async () => {
-      const video = videoRef.current;
+      const video = videoRef.current; // the live webcam feed source
       const canvas = canvasRef.current;
 
-      if (!video || !canvas || !landmarkerRef.current || video.readyState < 2) {
-        animationRef.current = requestAnimationFrame(detectPose);
+      if (!video || !canvas || !landmarkerRef.current || video.readyState < 2) { // readyState=2 means Have_CURRENT_DATA. video.readyState < 2 → the video doesn’t have enough data to play
+        animationRef.current = requestAnimationFrame(detectPose); // requestAnimationFrame schedules the next frame
         return;
       }
 
-      const ctx = canvas.getContext('2d');
-      const results = await landmarkerRef.current.detectForVideo(video, performance.now());
-      let landmarks = results?.landmarks?.[0];
+      const ctx = canvas.getContext('2d'); // get 2D drawing context for the canvas
+      const results = await landmarkerRef.current.detectForVideo(video, performance.now()); // detectForVideo is a MediaPipe API method for analyzing a video frame. MediaPipe internally takes the current frame from 'video' for analysis. await means pause here until the detection result is ready, then store it in results.
+      let landmarks = results?.landmarks?.[0]; // accesse the first detected pose (index 0)(first person) in the landmarks array
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // clears the entire canvas each frame to ensures drawings don’t pile up over time. clearRect(0,0,w,h) = erase a rectangle area.
 
       if (landmarks && landmarks.length > 0) {
-        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x }));
+        landmarks = landmarks.map((pt) => ({ ...pt, x: 1 - pt.x })); // Replacing x of all the points with 1 - x performs a horizontal mirror across the vertical midline
 
         if (mode === 'badminton') {
           const leftWrist = landmarks[15];
@@ -103,16 +103,16 @@ const PoseTracker = ({
         if (mode === 'wipe') {
           const wristIndex = side === 'right' ? 16 : 15;
           const wrist = landmarks[wristIndex];
-          if (wrist.visibility > 0.5) {
+          if (wrist.visibility > 0.5) { // filters out low‑confidence frames
             ctx.beginPath();
-            ctx.arc(wrist.x * canvas.width, wrist.y * canvas.height, 10, 0, 2 * Math.PI);
+            ctx.arc(wrist.x * canvas.width, wrist.y * canvas.height, 10, 0, 2 * Math.PI); // To convert normalized → pixels, multiply by the canvas’ pixel size
             ctx.fillStyle = 'cyan';
             ctx.fill();
 
-            if (onRightWristMove) {
-              const relX = wrist.x;
+            if (onWristMove) {
+              const relX = wrist.x; // relative to the frame size
               const relY = wrist.y;
-              onRightWristMove(relX, relY);
+              onWristMove(relX, relY);
             }
           }
 
@@ -165,7 +165,6 @@ const PoseTracker = ({
           const ready = checkRestPoseByVertical(landmarks, a, b);
           if (ready && !isPoseReadyRef.current) {
             isPoseReadyRef.current = true;
-            onPoseReady?.();
             onRestConfirmed?.();
           }
         }
@@ -200,43 +199,43 @@ const PoseTracker = ({
             angleToPlane,
             shoulder_elbow_z_diff,
             shoulder_wrist_z_diff,
-          ].map((v) => (isNaN(v) || v === undefined ? 0 : v));
+          ].map((v) => (isNaN(v) || v === undefined ? null : v)); // if feature is NaN or undefined → convert to null
           onAngleUpdate?.({ a, b, landmarks, features });         
         } 
       }
-      animationRef.current = requestAnimationFrame(detectPose);
+      animationRef.current = requestAnimationFrame(detectPose); // Uses requestAnimationFrame to schedule the next execution of detectPose. Stores the ID in animationRef.current so can cancel it later
     };
 
     setup();
 
-    return () => {
-      cancelAnimationFrame(animationRef.current);
-      if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+    return () => { // cleanup function when the component unmounts to avoid memory leaks, stop loops, release hardware resources (camera, GPU)
+      cancelAnimationFrame(animationRef.current); // Stop the animation loop
+      if (videoRef.current?.srcObject) { // run if videoRef.current exists and has a srcObject
+        videoRef.current.srcObject.getTracks().forEach((t) => t.stop()); // turns off the webcam
       }
       if (landmarkerRef.current) {
-        landmarkerRef.current.close();
+        landmarkerRef.current.close(); // method provided by MediaPipe to free GPU/CPU memory used by the model
         landmarkerRef.current = null;
       }
     };
-  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onRightWristMove, onRealtimeAngleUpdate]);
+  }, [onPoseReady, onAngleUpdate, side, mode, onRestConfirmed, onWristMove, onRealtimeAngleUpdate]);
 
-  return (
+  return ( // render (tells React what UI elements to put on the screen)
     <div
       className={`camera-wrapper ${mode}-mode`}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
     >
       <video
         ref={videoRef}
-        className={mode === 'measure' || mode === 'rest' ? 'pose-video' : 'pose-video hidden'}
+        className={mode === 'measure' || mode === 'rest' ? 'pose-video' : 'pose-video hidden'} // if mode = measure or rest, show video; otherwise hide video
         muted
-        playsInline
+        playsInline // Ensures video plays inside the element
         autoPlay
       />
-      <canvas
+      <canvas // draw pose landmarks on top of video
         ref={canvasRef}
         className="pose-canvas"
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} // fully cover the video
       />
     </div>
   );
@@ -248,7 +247,7 @@ function calculateVerticalAbductionAngle(landmarks, side = 'left') {
   const elbow = landmarks[isRight ? 14 : 13];
   const dx = elbow.x - shoulder.x;
   const dy = elbow.y - shoulder.y;
-  const angle = Math.atan2(dx, dy) * (180 / Math.PI);
+  const angle = Math.atan2(dx, dy) * (180 / Math.PI); // computes the angle relative to the vertical axis (y‑axis). Multiply by 180/3.14 to convert radians → degrees.
   return Math.abs(angle);
 }
 
@@ -261,7 +260,7 @@ function calculateShoulderFlexionAngle(landmarks, side = 'right') {
     elbow.y - shoulder.y,
     elbow.z - shoulder.z,
   ];
-  const vertical = [0, 1, 0];
+  const vertical = [0, -1, 0]; // vertical axis pointing downward along the y-axis
   const dot = upperArm[0]*vertical[0] + upperArm[1]*vertical[1] + upperArm[2]*vertical[2];
   const len1 = Math.sqrt(upperArm[0]**2 + upperArm[1]**2 + upperArm[2]**2);
   const len2 = Math.sqrt(vertical[0]**2 + vertical[1]**2 + vertical[2]**2);

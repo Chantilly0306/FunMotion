@@ -32,7 +32,6 @@ const RestPost = () => {
         <PoseTracker
           side="left"
           mode="rest"
-          onPoseReady={() => {}}
           onRestConfirmed={handleRestConfirmed}
         />
       </div>

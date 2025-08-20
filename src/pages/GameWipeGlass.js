@@ -8,14 +8,14 @@ import PoseTracker from '../components/PoseTracker';
 import './GameWipeGlass.css';
 
 export default function GameWipeGlass() {
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const [scenery, setScenery] = useState('');
-  const [wipeRatio, setWipeRatio] = useState(0);
-  const [startTime, setStartTime] = useState(null);
-  const [shoulderFlex, setShoulderFlex] = useState(0);
-  const [elbowExtend, setElbowExtend] = useState(0);
-  const frameCountRef = useRef(0);
-  const overlayRef = useRef(null);
+  const [gameCompleted, setGameCompleted] = useState(false); // Whether the game is finished
+  const [scenery, setScenery] = useState('');                // Current background scenery image
+  const [wipeRatio, setWipeRatio] = useState(0);             // Progress of wiping (0 ~ 1)
+  const [startTime, setStartTime] = useState(null);          // Game start time
+  const [shoulderFlex, setShoulderFlex] = useState(0);       // Real-time shoulder flexion angle
+  const [elbowExtend, setElbowExtend] = useState(0);         // Real-time elbow extension angle
+  const frameCountRef = useRef(0);                           // Frame counter (to optimize calculation frequency)
+  const overlayRef = useRef(null);                           // Canvas reference for gray overlay
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -24,38 +24,42 @@ export default function GameWipeGlass() {
 
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * 15) + 1;
-    setScenery(`/scenery${String(randomIndex).padStart(2, '0')}.png`);
+    setScenery(`/scenery${String(randomIndex).padStart(2, '0')}.png`); // Pick a random scenery image (01 ~ 15)
     setStartTime(Date.now());
   }, []);
 
-  useEffect(() => {
+  useEffect(() => { // Draw initial gray-glass overlay on canvas
     const img = new Image();
     img.src = '/gray-glass.png';
     img.onload = () => {
       const canvas = overlayRef.current;
       const ctx = canvas.getContext('2d');
-      const displayWidth = canvas.clientWidth;
+      const displayWidth = canvas.clientWidth; // Match canvas size to container
       const displayHeight = canvas.clientHeight;
       canvas.width = displayWidth;
       canvas.height = displayHeight;
-      ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+      ctx.drawImage(img, 0, 0, displayWidth, displayHeight); // Fill the whole area with gray overlay
     };
   }, [scenery]);
 
+  // Erase a small area on the overlay when wrist moves
   const eraseAt = (relX, relY) => {
     const canvas = overlayRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Convert normalized wrist coordinates into canvas pixels
     const x = relX * canvas.width;
     const y = relY * canvas.height;
 
     ctx.clearRect(x - eraseRadius / 2, y - eraseRadius / 2, eraseRadius, eraseRadius);
 
+    // Update progress every 5 frames (to reduce calculation load)
     frameCountRef.current++;
     if (frameCountRef.current % 5 !== 0) return;
 
+    // Count number of transparent pixels
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
     let transparentCount = 0;
@@ -68,7 +72,7 @@ export default function GameWipeGlass() {
     const ratio = transparentCount / totalPixels;
     setWipeRatio(ratio);
 
-    if (ratio >= 0.90 && !gameCompleted) {
+    if (ratio >= 0.90 && !gameCompleted) { // When 90% of the overlay is erased, complete the game
       handleWipeComplete();
     }
   };
@@ -84,7 +88,7 @@ export default function GameWipeGlass() {
       return;
     }
 
-    try {
+    try { // Save game record to Firestore under users/{uid}/wipeGlass/{side}/{difficulty}
       const recordRef = collection(
         db,
         'users',
@@ -102,6 +106,8 @@ export default function GameWipeGlass() {
       });
 
       console.log('Game record saved');
+
+      // Redirect to record page after 4 seconds
       setTimeout(() => {
         navigate('/record', {
           state: {
@@ -126,7 +132,7 @@ export default function GameWipeGlass() {
         side={side}
         onWipeProgress={(ratio) => setWipeRatio(ratio)}
         onComplete={handleWipeComplete}
-        onRightWristMove={(x, y) => eraseAt(x, y)}
+        onWristMove={(x, y) => eraseAt(x, y)}
         onRealtimeAngleUpdate={({ shoulder, elbow }) => {
           setShoulderFlex(shoulder);
           setElbowExtend(elbow);

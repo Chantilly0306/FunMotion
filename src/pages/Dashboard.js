@@ -8,24 +8,24 @@ import 'chart.js/auto';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [records, setRecords] = useState([]);
-  const [selectedGame, setSelectedGame] = useState('romMeasurements');
-  const [selectedMetric, setSelectedMetric] = useState('shoulder-abd-l');
+  const [records, setRecords] = useState([]); // Stores fetched game/measurement records
+  const [selectedGame, setSelectedGame] = useState('romMeasurements'); // Which game category (ROM or Wipe Glass)
+  const [selectedMetric, setSelectedMetric] = useState('shoulder-abd-l'); // Which metric/movement is selected
   const navigate = useNavigate();
 
-  const measurementMetrics = [
+  const measurementMetrics = [ // Dropdown options for ROM measurements
     { label: 'Left Shoulder Abduction', value: 'shoulder-abd-l' },
     { label: 'Right Shoulder Abduction', value: 'shoulder-abd-r' },
   ];
 
-  const wipeMetrics = [
+  const wipeMetrics = [ // Dropdown options for Wipe Glass game
     { label: 'Left Shoulder Flexion', value: 'shoulder-flex-l' },
     { label: 'Right Shoulder Flexion', value: 'shoulder-flex-r' },
     { label: 'Left Elbow Extension', value: 'elbow-ext-l' },
     { label: 'Right Elbow Extension', value: 'elbow-ext-r' },
   ];
 
-  useEffect(() => {
+  useEffect(() => { // Ensure metric selection stays valid when switching game type
     const validOptions =
       selectedGame === 'romMeasurements' ? measurementMetrics : wipeMetrics;
     const isValid = validOptions.some((opt) => opt.value === selectedMetric);
@@ -34,7 +34,7 @@ const Dashboard = () => {
     }
   }, [selectedGame]);
 
-  useEffect(() => {
+  useEffect(() => { // Fetch user records from Firestore whenever selection changes
     const fetchRecords = async () => {
       const user = auth.currentUser;
       if (!user) return;
@@ -57,13 +57,14 @@ const Dashboard = () => {
         const data = snapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
-          date: doc.data().timestamp?.toDate().toLocaleDateString(),
+          date: doc.data().timestamp?.toDate().toLocaleDateString(), // Convert timestamp to date string
         }));
         setRecords(data);
       } else {
         const allDifficulties = ['easy', 'medium', 'difficult'];
         let combinedData = [];
 
+        // Fetch Wipe Glass game records across all difficulties
         for (const difficulty of allDifficulties) {
           const q = query(
             collection(db, 'users', user.uid, 'wipeGlass', side, difficulty),
@@ -81,6 +82,7 @@ const Dashboard = () => {
           combinedData = combinedData.concat(data);
         }
 
+        // Sort records chronologically across all difficulties
         combinedData.sort((a, b) => a.timeValue - b.timeValue);
         setRecords(combinedData);
       }
@@ -90,7 +92,7 @@ const Dashboard = () => {
   }, [selectedGame, selectedMetric]);
 
   const chartData = {
-    labels: records.map((r) => r.date),
+    labels: records.map((r) => r.date), // Dates on X-axis
     datasets: [
       {
         label:

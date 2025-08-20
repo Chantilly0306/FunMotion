@@ -7,18 +7,19 @@ import { db, auth } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const Measure = () => {
-  const [hasSpoken, setHasSpoken] = useState(false);
-  const [maxAngle, setMaxAngle] = useState(0);
-  const [stableStart, setStableStart] = useState(null);
-  const [countdown, setCountdown] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [finalAngle, setFinalAngle] = useState(null);
-  const [stableAngle, setStableAngle] = useState(null);
-  const [poseCorrect, setPoseCorrect] = useState(false);
-  const [showWarnings, setShowWarnings] = useState(false);
-  const [isFinalized, setIsFinalized] = useState(false);
+  const [hasSpoken, setHasSpoken] = useState(false);   // Track if voice instruction has been played
+  const [maxAngle, setMaxAngle] = useState(0);         // Highest angle recorded during movement
+  const [stableStart, setStableStart] = useState(null); // Timestamp when stable holding starts
+  const [countdown, setCountdown] = useState(null);     // Countdown (3 → 0) for stable holding
+  const [showResult, setShowResult] = useState(false);  // Whether to show the result screen
+  const [finalAngle, setFinalAngle] = useState(null);   // Final measured maximum angle
+  const [stableAngle, setStableAngle] = useState(null); // Angle at the moment stability is confirmed
+  const [poseCorrect, setPoseCorrect] = useState(false); // Whether the pose is predicted correct (ML output)
+  const [showWarnings, setShowWarnings] = useState(false); // Whether to display posture warnings
+  const [isFinalized, setIsFinalized] = useState(false);   // Prevents multiple finalizations
   const navigate = useNavigate();
 
+  // Show warning after 3 seconds
   useEffect(() => {
     if (!hasSpoken) {
       const msg = new SpeechSynthesisUtterance(
@@ -61,23 +62,23 @@ const Measure = () => {
     //   console.error('Error calling prediction API:', error);
     // }
   
-    if (a > maxAngle) setMaxAngle(a);
+    if (a > maxAngle) setMaxAngle(a); // Track maximum angle reached
   
-    const isHolding = a > 10;
-    const isStable = Math.abs(a - maxAngle) < 20;
+    const isHolding = a > 10; // Check if user is holding the arm above 10° and stable
+    const isStable = Math.abs(a - maxAngle) < 20; // Check if the arm angle is stable
   
     if (isHolding && isStable) {
       if (!stableStart) {
         setStableStart(Date.now());
         setCountdown(3);
       } else {
-        const elapsed = (Date.now() - stableStart) / 1000;
+        const elapsed = (Date.now() - stableStart) / 1000; // Calculate elapsed stable time
         const newCountdown = Math.ceil(3 - elapsed);
-        if (newCountdown !== countdown) {
+        if (newCountdown !== countdown) { // Update countdown overlay
           setCountdown(newCountdown > 0 ? newCountdown : null);
         }
   
-        if (elapsed >= 3) {
+        if (elapsed >= 3) { // If held for 3 seconds, finalize result
           setFinalAngle(maxAngle);
           setShowResult(true);
           setCountdown(null);
@@ -86,7 +87,7 @@ const Measure = () => {
           return;
         }
       }
-    } else {
+    } else { // Reset if user drops arm or becomes unstable
       setStableStart(null);
       setCountdown(null);
     }
@@ -99,7 +100,7 @@ const Measure = () => {
       return;
     }
   
-    try {
+    try { // Save under path: users/{uid}/romMeasurements/shoulder-abd-l/records
       const romCollection = collection(db, 'users', user.uid, 'romMeasurements', 'shoulder-abd-l', 'records');
       await addDoc(romCollection, {
         angle: finalAngle,
